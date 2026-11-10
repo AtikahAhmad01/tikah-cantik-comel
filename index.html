@@ -52,6 +52,14 @@ small,.mu{font-size:13px;color:var(--mu)}
 .bar i{display:block;height:100%;border-radius:9px;background:linear-gradient(90deg,var(--ac),#D8A7CF);transition:width 1s}
 .ic{width:38px;height:38px;border-radius:14px;background:var(--lav);display:grid;place-items:center;font-size:18px;flex:none}
 #g_f small{display:block;margin:8px 4px 0}
+/* 'tikah added Calendar styles 10Nov2026 */
+.cal{display:grid;grid-template-columns:repeat(7,1fr);text-align:center;gap:4px 0}
+.cal span{padding:8px 0;font-size:14px;border-radius:50%;position:relative;cursor:pointer}
+.cal .h{color:var(--mu);font-size:12px;cursor:default}
+.cal .t{box-shadow:inset 0 0 0 2px var(--ac)}
+.cal .s{background:var(--rose);color:#fff}
+.cal .d:after{content:'';position:absolute;left:50%;bottom:1px;width:5px;height:5px;margin-left:-2.5px;border-radius:50%;background:var(--ac)}
+.cal .s.d:after{background:#fff}
 /* 'tikah added Expenses styles 10Nov2026 */
 .donut{width:130px;height:130px;border-radius:50%;flex:none;display:grid;place-items:center}
 .donut div{width:78px;height:78px;border-radius:50%;background:var(--bg);display:grid;place-items:center;font:600 13px 'Fraunces',serif;text-align:center;padding:4px}
@@ -118,9 +126,12 @@ small,.mu{font-size:13px;color:var(--mu)}
 <button class="btn fab" id="w_add">+ Add savings</button></section>
 <div id="gbg"><div class="sheet"><h2 id="g_t" style="margin-top:0"></h2><div id="g_f"></div>
 <div class="row" style="margin-top:14px"><button class="btn ghost sp" id="g_cancel">Cancel</button><button class="btn sp" id="g_save">Save</button></div></div></div>
-<section class="scr" id="cal"><h1>Calendar</h1><div class="card mu" style="text-align:center;margin-top:12px">Coming soon ♡</div></section>
+<!-- 'tikah added Calendar + Bills screens 10Nov2026 -->
+<section class="scr" id="cal"><h1>Calendar</h1><div id="c_body"></div><button class="btn fab" id="c_add">+ Event</button></section>
+<section class="scr" id="bills"><button class="btn ghost" data-go="more">‹ Back</button><h1 style="margin:10px 0">Monthly Bills</h1><div id="b_body"></div><button class="btn fab" id="b_add">+ Bill</button></section>
 <section class="scr" id="more"><h1>More</h1><div class="card" style="margin-top:12px"><div class="li row" data-go="wed" style="cursor:pointer"><div class="ic">💍</div><div class="sp"><b>Wedding savings</b></div></div>
-<div class="li row" data-go="rest" style="cursor:pointer"><div class="ic">🛒</div><div class="sp"><b>Restock</b></div></div></div>
+<div class="li row" data-go="rest" style="cursor:pointer"><div class="ic">🛒</div><div class="sp"><b>Restock</b></div></div>
+<div class="li row" data-go="bills" style="cursor:pointer"><div class="ic">🧾</div><div class="sp"><b>Monthly bills</b></div></div></div>
 <div class="card mu" style="text-align:center;margin-bottom:12px">More things are coming soon ♡</div><button class="btn ghost" id="bout2">Sign out</button></section>
 <div id="dbg"><div class="sheet"><h2 style="margin-top:0">Our special date ♡</h2><small>The day our story started. We’ll count the days together.</small>
 <input id="d_in" type="date"><div class="row" style="margin-top:10px"><button class="btn ghost sp" id="d_cancel">Cancel</button><button class="btn sp" id="d_save">Save</button></div></div></div>
@@ -151,7 +162,7 @@ function esc(s){const d=document.createElement('div');d.textContent=s==null?'':S
 const TABS=['home','tasks','exp','cal','more']; /* 'tikah nav tabs 10Nov2026 */
 function show(id){
   document.querySelectorAll('.scr').forEach(s=>s.classList.toggle('on',s.id===id));
-  const sub=['wed','rest'].includes(id);
+  const sub=['wed','rest','bills'].includes(id);
   $('nav').style.display=TABS.includes(id)||sub?'flex':'none';
   document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===(sub?'more':id)));
   const e=$(id);if(e)e.scrollTop=0;
@@ -198,6 +209,8 @@ onAuthStateChanged(auth,async u=>{
   unsubs.push(onSnapshot(col('wcheck'),s=>{wchk={};wcust=[];s.forEach(d=>{wchk[d.id]=d.data();if(d.data().custom)wcust.push({id:d.id,...d.data()})});renderWed()},()=>{}));
   unsubs.push(onSnapshot(col('restock'),s=>{stock=s.docs.map(d=>({id:d.id,...d.data()}));renderStock()},()=>{}));
   unsubs.push(onSnapshot(col('expenses'),s=>{ex=s.docs.map(d=>({id:d.id,...d.data()}));renderExp()},()=>{})); /* 'tikah added expenses data 10Nov2026 */
+  unsubs.push(onSnapshot(col('events'),s=>{evs=s.docs.map(d=>({id:d.id,...d.data()}));renderCal()},()=>{})); /* 'tikah added events + bills data 10Nov2026 */
+  unsubs.push(onSnapshot(col('bills'),s=>{bills=s.docs.map(d=>({id:d.id,...d.data()}));renderBills()},()=>{}));
   show('home'); /* 'tikah Home is first screen 10Nov2026 */
 });
 
@@ -318,6 +331,82 @@ $('exp').onclick=async e=>{
     if(p){ep=p.dataset.ep;renderExp()}
     if(ed){const y=ex.find(z=>z.id===ed.dataset.e);if(y)expForm(y)}
     if(x&&confirm('Delete this expense for both of you? This cannot be undone.'))await deleteDoc(doc(col('expenses'),x.dataset.x));
+  }catch(err){toast('Something went wrong. Please try again.')}
+};
+
+/* 'tikah added Calendar + Bills logic 10Nov2026 */
+let evs=[],bills=[],cm=ymd(new Date()).slice(0,7),cs=ymd(new Date()),bm=ymd(new Date()).slice(0,7);
+const ETYPE=[['Dates','💕'],['Birthdays','🎂'],['Anniversaries','🥂'],['Family events','👨‍👩‍👧'],['Appointments','🩺'],['Travel','✈️'],['Wedding preparation','💐'],['Other','✨']];
+const icon=t=>(ETYPE.find(x=>x[0]===t)||[0,'✨'])[1];
+const occ=(e,d)=>e.date===d||(e.yearly&&d>e.date&&e.date.slice(5)===d.slice(5));
+function nextOcc(e,today){if(!e.yearly)return e.date>=today?e.date:null;let d=today.slice(0,4)+e.date.slice(4);if(d<today)d=(+today.slice(0,4)+1)+e.date.slice(4);return d<e.date?e.date:d}
+function gcal(e,ds){
+  const c=s=>s.replace(/-/g,'');let dt;
+  if(e.time){const h=Math.min(+e.time.slice(0,2)+1,23);dt=c(ds)+'T'+e.time.replace(':','')+'00/'+c(ds)+'T'+String(h).padStart(2,'0')+e.time.slice(3,5)+'00'}
+  else{const n=new Date(ds+'T00:00');n.setDate(n.getDate()+1);dt=c(ds)+'/'+c(ymd(n))}
+  return 'https://calendar.google.com/calendar/render?action=TEMPLATE&text='+encodeURIComponent(e.title)+'&dates='+dt+'&details='+encodeURIComponent(e.note||'')+'&location='+encodeURIComponent(e.loc||'')+(e.yearly?'&recur='+encodeURIComponent('RRULE:FREQ=YEARLY'):'');
+}
+function evItem(e){
+  return '<div class="li row"><div class="ic">'+icon(e.type)+'</div><div class="sp" data-ev="'+esc(e.id)+'" style="cursor:pointer"><b>'+esc(e.title)+'</b><small>'+(e.time?esc(e.time)+' · ':'')+esc(e.type)+(e.loc?' · '+esc(e.loc):'')+(e.yearly?' · every year':'')+'</small>'+(e.note?'<small style="display:block">'+esc(e.note)+'</small>':'')+'</div><a href="'+gcal(e,cs)+'" target="_blank" rel="noopener noreferrer" aria-label="Add to Google Calendar" style="text-decoration:none">📅</a><button class="x" data-evx="'+esc(e.id)+'">🗑</button></div>';
+}
+function renderCal(){
+  if(!me||!$('c_body'))return;
+  const today=ymd(new Date()),[Y,M]=cm.split('-').map(Number),first=new Date(Y,M-1,1).getDay(),n=new Date(Y,M,0).getDate();
+  let g=['S','M','T','W','T','F','S'].map(d=>'<span class="h">'+d+'</span>').join('')+'<span></span>'.repeat(first);
+  for(let i=1;i<=n;i++){const ds=cm+'-'+String(i).padStart(2,'0');g+='<span data-day="'+ds+'" class="'+(ds===today?'t ':'')+(ds===cs?'s ':'')+(evs.some(e=>occ(e,ds))?'d':'')+'">'+i+'</span>'}
+  let h='<div class="row" style="margin:6px 0 12px"><button class="pill" data-cm="-1">‹</button><b class="sp" style="text-align:center">'+new Date(Y,M-1,1).toLocaleDateString('en-GB',{month:'long',year:'numeric'})+'</b><button class="pill" data-cm="1">›</button></div><div class="card"><div class="cal">'+g+'</div></div>';
+  const day=evs.filter(e=>occ(e,cs)).sort((a,b)=>(a.time||'').localeCompare(b.time||''));
+  h+='<h2>'+(cs===today?'Today':nice(cs))+'</h2><div class="card">'+(day.length?day.map(evItem).join(''):'<span class="mu">Nothing planned ♡</span>')+'</div>';
+  const up=evs.map(e=>({e,d:nextOcc(e,today)})).filter(x=>x.d).sort((a,b)=>a.d.localeCompare(b.d)).slice(0,5);
+  h+='<h2>Coming up</h2><div class="card">'+(up.length?up.map(x=>{const k=Math.round((new Date(x.d+'T00:00')-new Date(today+'T00:00'))/864e5);return '<div class="li row"><div class="ic">'+icon(x.e.type)+'</div><div class="sp"><b>'+esc(x.e.title)+'</b><small>'+nice(x.d)+(x.e.time?' · '+esc(x.e.time):'')+'</small></div><small>'+(k===0?'Today':k===1?'Tomorrow':'in '+k+' days')+'</small></div>'}).join(''):'<span class="mu">No upcoming events</span>')+'</div>';
+  $('c_body').innerHTML=h;
+}
+function evForm(x){
+  x=x||{};
+  ask(x.id?'Edit event':'New event',[{k:'title',p:'Title',v:x.title},{k:'date',p:'Date',t:'date',v:x.date||cs},{k:'time',p:'Time (optional)',t:'time',v:x.time},{k:'type',p:'Type',opts:ETYPE.map(t=>[t[0],t[1]+' '+t[0]]),v:x.type||'Dates'},{k:'loc',p:'Location (optional)',v:x.loc},{k:'note',p:'Note (optional)',v:x.note},{k:'yearly',p:'Repeat',opts:[['','Does not repeat'],['1','Every year']],v:x.yearly?'1':''}],v=>{
+    if(!v.title||!v.date){toast('Please add a title and a date');return false}
+    const d={title:v.title.slice(0,80),date:v.date,time:v.time,type:v.type,loc:v.loc.slice(0,80),note:v.note.slice(0,200),yearly:!!v.yearly};
+    return x.id?updateDoc(doc(col('events'),x.id),d):addDoc(col('events'),{...d,createdBy:me.uid,createdAt:serverTimestamp()});
+  });
+}
+$('c_add').onclick=()=>evForm();
+$('cal').onclick=async e=>{
+  const m=e.target.closest('[data-cm]'),d=e.target.closest('[data-day]'),ed=e.target.closest('[data-ev]'),x=e.target.closest('[data-evx]');
+  try{
+    if(m){const t=new Date(cm+'-01T00:00');t.setMonth(t.getMonth()+(+m.dataset.cm));cm=ymd(t).slice(0,7);renderCal()}
+    if(d){cs=d.dataset.day;renderCal()}
+    if(ed){const y=evs.find(z=>z.id===ed.dataset.ev);if(y)evForm(y)}
+    if(x&&confirm('Delete this event for both of you? This cannot be undone.'))await deleteDoc(doc(col('events'),x.dataset.evx));
+  }catch(err){toast('Something went wrong. Please try again.')}
+};
+
+const billIn=(b,m)=>b.recurring?m>=b.startMonth:b.startMonth===m;
+function renderBills(){
+  if(!me||!$('b_body'))return;
+  const today=ymd(new Date()),[Y,M]=bm.split('-').map(Number),dim=new Date(Y,M,0).getDate();
+  const l=bills.filter(b=>billIn(b,bm)).sort((a,b)=>a.day-b.day),isP=b=>!!(b.paid||{})[bm];
+  const tot=l.reduce((a,b)=>a+b.amount,0),pd=l.filter(isP).reduce((a,b)=>a+b.amount,0),pct=tot?Math.round(pd/tot*100):0;
+  let h='<div class="row" style="margin:6px 0 12px"><button class="pill" data-bm="-1">‹</button><b class="sp" style="text-align:center">'+new Date(Y,M-1,1).toLocaleDateString('en-GB',{month:'long',year:'numeric'})+'</b><button class="pill" data-bm="1">›</button></div>';
+  h+='<div class="card"><div class="row"><div class="sp"><small>Total</small><b style="font:600 22px Fraunces,serif;display:block">'+RM(tot)+'</b></div><div class="sp"><small>Paid</small><b style="font:600 22px Fraunces,serif;display:block">'+RM(pd)+'</b></div><div class="sp"><small>Remaining</small><b style="font:600 22px Fraunces,serif;display:block">'+RM(tot-pd)+'</b></div></div><div class="bar"><i style="width:'+pct+'%"></i></div><small>'+pct+'% paid</small></div>';
+  h+='<div class="card">'+(l.length?l.map(b=>{const dd=bm+'-'+String(Math.min(b.day,dim)).padStart(2,'0'),p=isP(b);return '<div class="li row'+(p?' done':'')+'"><div class="sp" data-be="'+esc(b.id)+'" style="cursor:pointer"><b>'+esc(b.name)+'</b><small>'+(!p&&dd<today?'Overdue · ':'')+'Due '+nice(dd)+' · '+esc(who(b.by))+(b.recurring?' · monthly':'')+'</small>'+(b.note?'<small style="display:block">'+esc(b.note)+'</small>':'')+'</div><b>'+RM(b.amount)+'</b><button class="pill'+(p?' on':'')+'" data-bp="'+esc(b.id)+'">'+(p?'Paid ✓':'Unpaid')+'</button><button class="x" data-bx="'+esc(b.id)+'">🗑</button></div>'}).join(''):'<span class="mu">No bills this month ♡ Tap “+ Bill”.</span>')+'</div>';
+  $('b_body').innerHTML=h;
+}
+function billForm(x){
+  x=x||{};
+  ask(x.id?'Edit bill':'New bill',[{k:'name',p:'Bill name',v:x.name},{k:'amount',p:'Amount (RM)',t:'number',v:x.amount},{k:'date',p:'Due date',t:'date',v:x.id?x.startMonth+'-'+String(x.day).padStart(2,'0'):bm+'-01'},{k:'by',p:'Who is responsible',opts:Object.keys(members).map(u=>[u,who(u)]),v:x.by||me.uid},{k:'rep',p:'Repeat',opts:[['1','Every month'],['','Just this month']],v:x.id?(x.recurring?'1':''):'1'},{k:'note',p:'Note (optional)',v:x.note}],v=>{
+    const n=+v.amount;if(!v.name||!(n>0)||!v.date){toast('Please add a name, amount and due date');return false}
+    const d={name:v.name.slice(0,60),amount:n,day:+v.date.slice(8,10),startMonth:v.date.slice(0,7),by:v.by||me.uid,note:v.note.slice(0,120),recurring:!!v.rep};
+    return x.id?updateDoc(doc(col('bills'),x.id),d):addDoc(col('bills'),{...d,paid:{},createdBy:me.uid,createdAt:serverTimestamp()});
+  });
+}
+$('b_add').onclick=()=>billForm();
+$('bills').onclick=async e=>{
+  const m=e.target.closest('[data-bm]'),p=e.target.closest('[data-bp]'),ed=e.target.closest('[data-be]'),x=e.target.closest('[data-bx]');
+  try{
+    if(m){const t=new Date(bm+'-01T00:00');t.setMonth(t.getMonth()+(+m.dataset.bm));bm=ymd(t).slice(0,7);renderBills()}
+    if(p){const b=bills.find(z=>z.id===p.dataset.bp);if(b)await setDoc(doc(col('bills'),b.id),{paid:{[bm]:!(b.paid||{})[bm]}},{merge:true})}
+    if(ed){const b=bills.find(z=>z.id===ed.dataset.be);if(b)billForm(b)}
+    if(x&&confirm('Delete this bill for both of you (all months)? This cannot be undone.'))await deleteDoc(doc(col('bills'),x.dataset.bx));
   }catch(err){toast('Something went wrong. Please try again.')}
 };
 
