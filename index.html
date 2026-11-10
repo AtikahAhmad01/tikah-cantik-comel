@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<!-- 'tikah created Our Future v1 (login + tasks) 10Nov2026 -->
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Our Future</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Fraunces:wght@600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#FFF5F8;--g:#FFE0EB;--s:#F9D5E2;--card:rgba(255,255,255,.93);--tx:#382A35;--mu:#9B8493;--ac:#E88EAF;--lav:#E9DFFF;--rose:#B85C83;--dv:#F3E4EB;--pill:#fff;color-scheme:light}
+@media(prefers-color-scheme:dark){:root{--bg:#19141D;--g:#2c2133;--s:#3a2a3e;--card:rgba(40,32,45,.93);--tx:#FFF0F6;--mu:#BDAAB9;--ac:#E99ABA;--lav:#3b2f55;--dv:#3a2f40;--rose:#A95D83;--pill:#28202D;color-scheme:dark}}
+*{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{font:400 16px/1.4 'DM Sans',system-ui,sans-serif;color:var(--tx);background:var(--bg);display:flex;justify-content:center}
+#wrap{width:100%;max-width:430px;height:100%;position:relative;overflow:hidden;background:linear-gradient(180deg,var(--g),var(--bg) 280px)}
+.scr{display:none;height:100%;overflow-y:auto;padding:calc(env(safe-area-inset-top,0px) + 18px) 16px 120px}
+.scr.on{display:block}
+h1{font:600 32px 'Fraunces',Georgia,serif}
+h2{font:600 19px 'Fraunces',Georgia,serif;margin:16px 2px 8px}
+small,.mu{font-size:13px;color:var(--mu)}
+.card{background:var(--card);border-radius:24px;padding:16px;margin-bottom:10px;box-shadow:0 6px 22px rgba(184,92,131,.10)}
+.row{display:flex;align-items:center;gap:12px}.sp{flex:1;min-width:0}
+.li{padding:10px 0;border-bottom:1px solid var(--dv)}.li:last-child{border:0}
+.li b{display:block;font-weight:700;word-wrap:break-word}
+.btn{border:0;border-radius:99px;background:var(--rose);color:#fff;font:700 15px 'DM Sans',sans-serif;padding:11px 20px;cursor:pointer;transition:transform .15s}
+.btn:active{transform:scale(.96)}.btn.ghost{background:var(--pill);color:var(--mu)}
+.pills{display:flex;gap:8px;overflow-x:auto;margin:10px 0 12px}
+.pill{flex:none;border:0;border-radius:99px;background:var(--pill);color:var(--mu);font:500 14px 'DM Sans';padding:8px 16px;cursor:pointer}
+.pill.on{background:var(--rose);color:#fff}
+.chk{width:28px;height:28px;border-radius:50%;border:2px solid var(--ac);flex:none;display:grid;place-items:center;color:#fff;font-size:15px;background:none;cursor:pointer;padding:0}
+.chk.rec{border-style:dashed}.chk.on{background:var(--ac)}
+.done .sp b{text-decoration:line-through;color:var(--mu)}
+.x{border:0;background:none;color:var(--mu);font-size:18px;cursor:pointer;padding:4px}
+.fab{position:absolute;right:16px;bottom:calc(24px + env(safe-area-inset-bottom,0px));z-index:5;animation:glow 2.6s ease-in-out infinite}
+@keyframes glow{0%,100%{box-shadow:0 4px 14px rgba(184,92,131,.3)}50%{box-shadow:0 4px 24px rgba(232,142,175,.75)}}
+@keyframes up{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes pop{0%{transform:scale(.6)}60%{transform:scale(1.25)}100%{transform:scale(1)}}
+.scr.on .card{animation:up .5s both}.chk.pop{animation:pop .4s}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px}
+#login{text-align:center;padding-top:22vh}
+#login .ic{font-size:56px}
+#sheetbg{position:absolute;inset:0;background:rgba(40,20,35,.45);display:none;z-index:20;align-items:flex-end}
+#sheetbg.on{display:flex}
+.sheet{width:100%;max-height:92%;overflow-y:auto;background:var(--bg);border-radius:26px 26px 0 0;padding:20px 18px calc(22px + env(safe-area-inset-bottom,0px));animation:sl .35s cubic-bezier(.2,.9,.3,1.1)}
+@keyframes sl{from{transform:translateY(100%)}to{transform:none}}
+.sheet input,.sheet select,.sheet textarea{width:100%;border:0;border-radius:16px;background:var(--card);padding:12px 14px;font:16px 'DM Sans';color:var(--tx);margin:5px 0;outline:0}
+#toast{position:absolute;left:50%;top:60px;transform:translateX(-50%);background:var(--rose);color:#fff;padding:9px 18px;border-radius:99px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .3s;z-index:30;max-width:90%;text-align:center}
+#toast.on{opacity:1}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style></head><body><div id="wrap">
+
+<section class="scr on" id="load"><p class="mu" style="text-align:center;padding-top:30vh">Loading ♡</p></section>
+
+<section class="scr" id="login">
+<div class="ic">💗</div><h1 style="margin:8px 0">Our Future</h1>
+<p class="mu" style="margin-bottom:24px">Our little private pink home ♡</p>
+<button class="btn" id="bin">Sign in with Google</button>
+<p id="lerr" class="mu" style="margin-top:16px"></p>
+</section>
+
+<section class="scr" id="tasks">
+<div class="row"><h1 class="sp">Tasks</h1><button class="btn ghost" id="bout">Sign out</button></div>
+<div class="pills" id="fp"><button class="pill on" data-p="all">All</button><button class="pill" data-p="me">Me</button><button class="pill" data-p="partner">Partner</button></div>
+<div class="pills" id="fs"><button class="pill on" data-s="open">Open</button><button class="pill" data-s="done">Done</button><button class="pill" data-s="all">All</button></div>
+<div id="list"></div>
+<button class="btn fab" id="fab">+ New task</button>
+</section>
+
+<div id="sheetbg"><div class="sheet"><h2 style="margin-top:0">New task</h2>
+<input id="t_title" placeholder="What needs doing?" maxlength="120">
+<textarea id="t_note" rows="2" placeholder="Note (optional)" maxlength="500"></textarea>
+<select id="t_who"></select>
+<input id="t_due" type="date">
+<select id="t_pri"><option value="2">Normal priority</option><option value="3">High priority</option><option value="1">Low priority</option></select>
+<select id="t_rep"><option value="none">No repeat</option><option value="daily">Repeat daily</option><option value="weekly">Repeat weekly</option><option value="monthly">Repeat monthly</option></select>
+<input id="t_amt" type="number" inputmode="decimal" min="0" step="0.01" placeholder="Amount (optional, for bills)">
+<div class="row" style="margin-top:10px"><button class="btn ghost sp" id="t_cancel">Cancel</button><button class="btn sp" id="t_save">Save</button></div></div></div>
+<div id="toast"></div>
+</div>
+
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {getAuth,GoogleAuthProvider,signInWithPopup,onAuthStateChanged,signOut} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {getFirestore,collection,doc,setDoc,addDoc,updateDoc,deleteDoc,onSnapshot,serverTimestamp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const app=initializeApp({
+  apiKey:"AIzaSyB-CUns7cqapdFUs3fHEG3p26mVQLu2cbA",
+  authDomain:"our-future-8cd3b.firebaseapp.com",
+  projectId:"our-future-8cd3b",
+  storageBucket:"our-future-8cd3b.firebasestorage.app",
+  messagingSenderId:"144507104587",
+  appId:"1:144507104587:web:842f856340b42cded7ccce"
+});
+const auth=getAuth(app),db=getFirestore(app);
+const $=i=>document.getElementById(i);
+const tasksCol=collection(db,'couple','shared','tasks');
+const membersCol=collection(db,'couple','shared','members');
+let me=null,members={},tasks=[],fp='all',fs='open',unsubs=[];
+
+function esc(s){const d=document.createElement('div');d.textContent=s==null?'':String(s);return d.innerHTML}
+function show(id){document.querySelectorAll('.scr').forEach(s=>s.classList.toggle('on',s.id===id))}
+function toast(t){const e=$('toast');e.textContent=t;e.classList.add('on');setTimeout(()=>e.classList.remove('on'),2600)}
+function ymd(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function nice(s){return new Date(s+'T00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short'})}
+function who(uid){if(!uid)return 'Anyone';if(uid===me.uid)return 'Me';return (members[uid]&&members[uid].name||'Partner').split(' ')[0]}
+
+$('bin').onclick=async()=>{
+  $('lerr').textContent='';
+  try{await signInWithPopup(auth,new GoogleAuthProvider())}
+  catch(e){$('lerr').textContent='Sign-in did not finish. Please allow pop-ups and try again.'}
+};
+$('bout').onclick=()=>signOut(auth);
+
+onAuthStateChanged(auth,async u=>{
+  unsubs.forEach(f=>f());unsubs=[];
+  if(!u){me=null;show('login');return}
+  me=u;
+  try{
+    await setDoc(doc(membersCol,u.uid),{name:u.displayName||'Partner',photo:u.photoURL||''},{merge:true});
+  }catch(e){
+    $('lerr').textContent='Sorry, this Google account is not allowed in our private space.';
+    await signOut(auth);return;
+  }
+  unsubs.push(onSnapshot(membersCol,s=>{members={};s.forEach(d=>members[d.id]=d.data());fillWho();render()}));
+  unsubs.push(onSnapshot(tasksCol,s=>{tasks=s.docs.map(d=>({id:d.id,...d.data()}));render()},()=>toast('Could not load tasks')));
+  show('tasks');
+});
+
+function fillWho(){
+  const ids=Object.keys(members);
+  $('t_who').innerHTML=ids.map(i=>'<option value="'+esc(i)+'">Assigned to '+esc(who(i))+'</option>').join('');
+  if(ids.length<2)$('t_who').innerHTML+='<option disabled>Partner (not signed in yet)</option>';
+  if(me)$('t_who').value=me.uid;
+}
+
+document.querySelectorAll('#fp .pill').forEach(b=>b.onclick=()=>{fp=b.dataset.p;sel('fp',b);render()});
+document.querySelectorAll('#fs .pill').forEach(b=>b.onclick=()=>{fs=b.dataset.s;sel('fs',b);render()});
+function sel(id,b){document.querySelectorAll('#'+id+' .pill').forEach(x=>x.classList.toggle('on',x===b))}
+
+function render(){
+  if(!me)return;
+  const today=ymd(new Date());
+  let l=tasks.filter(t=>fp==='all'||(fp==='me'?t.assignee===me.uid:t.assignee!==me.uid));
+  if(fs==='open')l=l.filter(t=>!t.done);if(fs==='done')l=l.filter(t=>t.done);
+  const by=(a,b)=>(a.due||'9999').localeCompare(b.due||'9999')||(b.pri||2)-(a.pri||2);
+  const g={Overdue:[],Today:[],'Coming Up':[],Done:[]};
+  l.sort(by).forEach(t=>{
+    if(t.done)g.Done.push(t);
+    else if(t.due&&t.due<today)g.Overdue.push(t);
+    else if(t.due===today)g.Today.push(t);
+    else g['Coming Up'].push(t);
+  });
+  let h='';
+  for(const k in g){
+    if(!g[k].length)continue;
+    h+='<h2>'+k+'</h2><div class="card">'+g[k].map(item).join('')+'</div>';
+  }
+  $('list').innerHTML=h||'<div class="card mu" style="text-align:center">Nothing here yet ♡<br>Tap “+ New task” to add one.</div>';
+}
+function item(t){
+  const col={1:'#BFA8E8',2:'#E88EAF',3:'#B85C83'}[t.pri||2];
+  let s='<span class="dot" style="background:'+col+'"></span>'+(t.due?nice(t.due)+' · ':'')+esc(who(t.assignee));
+  if(t.amount)s+=' · RM '+esc(t.amount);
+  if(t.repeat&&t.repeat!=='none')s+=' · repeats '+esc(t.repeat);
+  let d='';
+  if(t.note)d+='<small style="display:block">'+esc(t.note)+'</small>';
+  if(t.done)d+='<small style="display:block">Done by '+esc(who(t.doneBy))+' · '+new Date(t.doneAt).toLocaleString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})+'</small>';
+  return '<div class="li row'+(t.done?' done':'')+'"><button class="chk'+(t.repeat&&t.repeat!=='none'?' rec':'')+(t.done?' on':'')+'" data-c="'+esc(t.id)+'">'+(t.done?'✓':'')+'</button><div class="sp"><b>'+esc(t.title)+'</b><small>'+s+'</small>'+d+'</div><button class="x" data-d="'+esc(t.id)+'" aria-label="Delete">🗑</button></div>';
+}
+$('list').onclick=async e=>{
+  const c=e.target.closest('[data-c]'),d=e.target.closest('[data-d]');
+  try{
+    if(c){
+      const t=tasks.find(x=>x.id===c.dataset.c);if(!t)return;
+      c.classList.add('pop');
+      if(!t.done){
+        await updateDoc(doc(tasksCol,t.id),{done:true,doneBy:me.uid,doneAt:Date.now()});
+        if(t.repeat&&t.repeat!=='none'&&t.due){
+          const n=new Date(t.due+'T00:00');
+          if(t.repeat==='daily')n.setDate(n.getDate()+1);
+          if(t.repeat==='weekly')n.setDate(n.getDate()+7);
+          if(t.repeat==='monthly')n.setMonth(n.getMonth()+1);
+          await addDoc(tasksCol,{title:t.title,note:t.note||'',assignee:t.assignee,due:ymd(n),pri:t.pri||2,repeat:t.repeat,amount:t.amount||'',done:false,createdBy:me.uid,createdAt:serverTimestamp()});
+          toast('Next one added ♡');
+        }
+      }else await updateDoc(doc(tasksCol,t.id),{done:false,doneBy:null,doneAt:null});
+    }
+    if(d&&confirm('Delete this task for both of you? This cannot be undone.'))await deleteDoc(doc(tasksCol,d.dataset.d));
+  }catch(err){toast('Something went wrong. Please try again.')}
+};
+
+$('fab').onclick=()=>{$('t_title').value='';$('t_note').value='';$('t_due').value=ymd(new Date());$('t_amt').value='';$('t_pri').value='2';$('t_rep').value='none';fillWho();$('sheetbg').classList.add('on')};
+$('t_cancel').onclick=()=>$('sheetbg').classList.remove('on');
+$('sheetbg').onclick=e=>{if(e.target.id==='sheetbg')$('sheetbg').classList.remove('on')};
+$('t_save').onclick=async()=>{
+  const title=$('t_title').value.trim();
+  if(!title){toast('Please type a title');return}
+  if($('t_rep').value!=='none'&&!$('t_due').value){toast('A repeating task needs a due date');return}
+  try{
+    await addDoc(tasksCol,{title,note:$('t_note').value.trim(),assignee:$('t_who').value||me.uid,due:$('t_due').value,pri:+$('t_pri').value,repeat:$('t_rep').value,amount:$('t_amt').value,done:false,createdBy:me.uid,createdAt:serverTimestamp()});
+    $('sheetbg').classList.remove('on');toast('Saved ♡');
+  }catch(e){toast('Could not save. Please try again.')}
+};
+</script></body></html>
