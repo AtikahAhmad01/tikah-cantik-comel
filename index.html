@@ -58,7 +58,7 @@ small,.mu{font-size:13px;color:var(--mu)}
 
 <section class="scr" id="tasks">
 <div class="row"><h1 class="sp">Tasks</h1><button class="btn ghost" id="bout">Sign out</button></div>
-<div class="pills" id="fp"><button class="pill on" data-p="all">All</button><button class="pill" data-p="me">Me</button><button class="pill" data-p="partner">Partner</button></div>
+<div class="pills" id="fp"><button class="pill on" data-p="all">All</button></div><!-- 'tikah changed person pills to names 10Nov2026 -->
 <div class="pills" id="fs"><button class="pill on" data-s="open">Open</button><button class="pill" data-s="done">Done</button><button class="pill" data-s="all">All</button></div>
 <div id="list"></div>
 <button class="btn fab" id="fab">+ New task</button>
@@ -100,7 +100,18 @@ function show(id){document.querySelectorAll('.scr').forEach(s=>s.classList.toggl
 function toast(t){const e=$('toast');e.textContent=t;e.classList.add('on');setTimeout(()=>e.classList.remove('on'),2600)}
 function ymd(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
 function nice(s){return new Date(s+'T00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short'})}
-function who(uid){if(!uid)return 'Anyone';if(uid===me.uid)return 'Me';return (members[uid]&&members[uid].name||'Partner').split(' ')[0]}
+/* 'tikah changed Me/Partner to real names 10Nov2026 */
+function who(uid){if(!uid)return 'Anyone';const m=members[uid]||{};return m.nick||(m.name||'Someone').split(' ')[0]}
+let asked=false;
+async function askNick(){
+  const m=members[me.uid];if(asked||!m||m.nick)return;asked=true;
+  const n=(prompt('Welcome! Please type your name for the app (Tikah or Zahir):','')||'').trim().slice(0,20);
+  if(n)await setDoc(doc(membersCol,me.uid),{nick:n},{merge:true}).catch(()=>toast('Could not save your name'));
+}
+function buildFp(){
+  const ids=Object.keys(members).sort((a,b)=>who(a).localeCompare(who(b)));
+  $('fp').innerHTML='<button class="pill'+(fp==='all'?' on':'')+'" data-p="all">All</button>'+ids.map(i=>'<button class="pill'+(fp===i?' on':'')+'" data-p="'+esc(i)+'">'+esc(who(i))+'</button>').join('');
+}
 
 $('bin').onclick=async()=>{
   $('lerr').textContent='';
@@ -119,7 +130,7 @@ onAuthStateChanged(auth,async u=>{
     $('lerr').textContent='Sorry, this Google account is not allowed in our private space.';
     await signOut(auth);return;
   }
-  unsubs.push(onSnapshot(membersCol,s=>{members={};s.forEach(d=>members[d.id]=d.data());fillWho();render()}));
+  unsubs.push(onSnapshot(membersCol,s=>{members={};s.forEach(d=>members[d.id]=d.data());askNick();fillWho();buildFp();render()}));
   unsubs.push(onSnapshot(tasksCol,s=>{tasks=s.docs.map(d=>({id:d.id,...d.data()}));render()},()=>toast('Could not load tasks')));
   show('tasks');
 });
@@ -127,18 +138,18 @@ onAuthStateChanged(auth,async u=>{
 function fillWho(){
   const ids=Object.keys(members);
   $('t_who').innerHTML=ids.map(i=>'<option value="'+esc(i)+'">Assigned to '+esc(who(i))+'</option>').join('');
-  if(ids.length<2)$('t_who').innerHTML+='<option disabled>Partner (not signed in yet)</option>';
+  if(ids.length<2)$('t_who').innerHTML+='<option disabled>Your partner (not signed in yet)</option>';
   if(me)$('t_who').value=me.uid;
 }
 
-document.querySelectorAll('#fp .pill').forEach(b=>b.onclick=()=>{fp=b.dataset.p;sel('fp',b);render()});
+$('fp').onclick=e=>{const b=e.target.closest('.pill');if(!b)return;fp=b.dataset.p;sel('fp',b);render()};
 document.querySelectorAll('#fs .pill').forEach(b=>b.onclick=()=>{fs=b.dataset.s;sel('fs',b);render()});
 function sel(id,b){document.querySelectorAll('#'+id+' .pill').forEach(x=>x.classList.toggle('on',x===b))}
 
 function render(){
   if(!me)return;
   const today=ymd(new Date());
-  let l=tasks.filter(t=>fp==='all'||(fp==='me'?t.assignee===me.uid:t.assignee!==me.uid));
+  let l=tasks.filter(t=>fp==='all'||t.assignee===fp);
   if(fs==='open')l=l.filter(t=>!t.done);if(fs==='done')l=l.filter(t=>t.done);
   const by=(a,b)=>(a.due||'9999').localeCompare(b.due||'9999')||(b.pri||2)-(a.pri||2);
   const g={Overdue:[],Today:[],'Coming Up':[],Done:[]};
