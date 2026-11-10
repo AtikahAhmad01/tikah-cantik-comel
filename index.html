@@ -52,6 +52,19 @@ small,.mu{font-size:13px;color:var(--mu)}
 .bar i{display:block;height:100%;border-radius:9px;background:linear-gradient(90deg,var(--ac),#D8A7CF);transition:width 1s}
 .ic{width:38px;height:38px;border-radius:14px;background:var(--lav);display:grid;place-items:center;font-size:18px;flex:none}
 #g_f small{display:block;margin:8px 4px 0}
+/* 'tikah added Chat styles 10Nov2026 */
+#chat{padding:0}#chat.on{display:flex;flex-direction:column}
+.ch-h{padding:calc(env(safe-area-inset-top,0px) + 14px) 12px 10px;background:var(--card);display:flex;align-items:center;gap:8px}
+.ch-h .x{font-size:24px;color:var(--rose)}
+.msgs{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:6px}
+.m{max-width:78%;padding:10px 14px;border-radius:20px;font-size:15px;background:#fff;color:#382A35;align-self:flex-start;box-shadow:0 2px 8px rgba(184,92,131,.1);white-space:pre-wrap;word-wrap:break-word;cursor:pointer;animation:pop .3s}
+.m.me{align-self:flex-end;background:var(--rose);color:#fff}.m.pin{outline:2px solid var(--ac)}
+.m small{display:block;font-size:11px;color:inherit;opacity:.7;margin-top:2px;text-align:right}
+.day{align-self:center;font-size:12px;color:var(--mu);background:var(--card);padding:3px 12px;border-radius:99px}
+.act{display:flex;gap:6px}
+.cin{display:flex;gap:8px;padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px));background:var(--card)}
+.cin input,#ch_q{flex:1;border:0;border-radius:99px;background:var(--bg);padding:12px 16px;font:16px 'DM Sans';color:var(--tx);outline:0;width:100%}
+.send{width:46px;height:46px;border-radius:50%;border:0;background:var(--rose);color:#fff;font-size:18px;cursor:pointer;flex:none}
 /* 'tikah added Calendar styles 10Nov2026 */
 .cal{display:grid;grid-template-columns:repeat(7,1fr);text-align:center;gap:4px 0}
 .cal span{padding:8px 0;font-size:14px;border-radius:50%;position:relative;cursor:pointer}
@@ -111,6 +124,7 @@ small,.mu{font-size:13px;color:var(--mu)}
 <div class="card hero"><div class="row" id="av" style="justify-content:center"></div>
 <div class="big" id="days">♡</div><div style="font-weight:700">Days Together</div><!-- 'tikah removed hero caption 10Nov2026 -->
 <div><button class="btn ghost" id="setd" style="margin-top:10px">Set our special date</button></div></div>
+<div class="card row" data-go="chat" style="cursor:pointer"><div class="ic">💬</div><div class="sp"><small id="h_cn">Chat</small><b id="h_cm" style="display:block;font-weight:500">Say hi ♡</b></div><small id="h_ct"></small></div>
 <h2>Today</h2><div class="card" id="h_today"></div>
 <h2>Coming Up</h2><div class="card" id="h_up"></div>
 <h2>Completed This Week</h2><div class="card row" id="h_wk"></div>
@@ -126,10 +140,19 @@ small,.mu{font-size:13px;color:var(--mu)}
 <button class="btn fab" id="w_add">+ Add savings</button></section>
 <div id="gbg"><div class="sheet"><h2 id="g_t" style="margin-top:0"></h2><div id="g_f"></div>
 <div class="row" style="margin-top:14px"><button class="btn ghost sp" id="g_cancel">Cancel</button><button class="btn sp" id="g_save">Save</button></div></div></div>
+<!-- 'tikah added Chat screen 10Nov2026 -->
+<section class="scr" id="chat">
+<div class="ch-h"><button class="x" data-go="home" aria-label="Back">‹</button><div class="sp"><b id="ch_n">Chat</b><br><small id="ch_s"></small></div><button class="x" id="ch_f" aria-label="Search" style="font-size:18px">🔍</button></div>
+<div id="ch_srch" style="display:none;padding:8px 12px;background:var(--card)"><input id="ch_q" placeholder="Search messages…"></div>
+<div id="ch_pin" style="display:none;padding:8px 14px;background:var(--lav);font-size:13px;cursor:pointer"></div>
+<div class="msgs" id="msgs"></div>
+<div class="cin"><input id="ch_i" placeholder="Message…" enterkeyhint="send" maxlength="1000"><button class="send" id="ch_send" aria-label="Send">➤</button></div>
+</section>
 <!-- 'tikah added Calendar + Bills screens 10Nov2026 -->
 <section class="scr" id="cal"><h1>Calendar</h1><div id="c_body"></div><button class="btn fab" id="c_add">+ Event</button></section>
 <section class="scr" id="bills"><button class="btn ghost" data-go="more">‹ Back</button><h1 style="margin:10px 0">Monthly Bills</h1><div id="b_body"></div><button class="btn fab" id="b_add">+ Bill</button></section>
-<section class="scr" id="more"><h1>More</h1><div class="card" style="margin-top:12px"><div class="li row" data-go="wed" style="cursor:pointer"><div class="ic">💍</div><div class="sp"><b>Wedding savings</b></div></div>
+<section class="scr" id="more"><h1>More</h1><div class="card" style="margin-top:12px"><div class="li row" data-go="chat" style="cursor:pointer"><div class="ic">💬</div><div class="sp"><b>Couple chat</b></div></div>
+<div class="li row" data-go="wed" style="cursor:pointer"><div class="ic">💍</div><div class="sp"><b>Wedding savings</b></div></div>
 <div class="li row" data-go="rest" style="cursor:pointer"><div class="ic">🛒</div><div class="sp"><b>Restock</b></div></div>
 <div class="li row" data-go="bills" style="cursor:pointer"><div class="ic">🧾</div><div class="sp"><b>Monthly bills</b></div></div></div>
 <div class="card mu" style="text-align:center;margin-bottom:12px">More things are coming soon ♡</div><button class="btn ghost" id="bout2">Sign out</button></section>
@@ -142,7 +165,7 @@ small,.mu{font-size:13px;color:var(--mu)}
 <script type="module">
 import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {getAuth,GoogleAuthProvider,signInWithPopup,onAuthStateChanged,signOut} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import {getFirestore,collection,doc,setDoc,addDoc,updateDoc,deleteDoc,onSnapshot,serverTimestamp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import {getFirestore,collection,doc,setDoc,addDoc,updateDoc,deleteDoc,onSnapshot,serverTimestamp,query,orderBy,limit} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const app=initializeApp({
   apiKey:"AIzaSyB-CUns7cqapdFUs3fHEG3p26mVQLu2cbA",
@@ -166,6 +189,7 @@ function show(id){
   $('nav').style.display=TABS.includes(id)||sub?'flex':'none';
   document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===(sub?'more':id)));
   const e=$(id);if(e)e.scrollTop=0;
+  chatOpen=id==='chat';if(chatOpen)openChat(); /* 'tikah chat open/close 10Nov2026 */
 }
 function toast(t){const e=$('toast');e.textContent=t;e.classList.add('on');setTimeout(()=>e.classList.remove('on'),2600)}
 function ymd(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
@@ -200,7 +224,7 @@ onAuthStateChanged(auth,async u=>{
     $('lerr').textContent='Sorry, this Google account is not allowed in our private space.';
     await signOut(auth);return;
   }
-  unsubs.push(onSnapshot(membersCol,s=>{members={};s.forEach(d=>members[d.id]=d.data());askNick();fillWho();buildFp();render()}));
+  unsubs.push(onSnapshot(membersCol,s=>{members={};s.forEach(d=>members[d.id]=d.data());askNick();fillWho();buildFp();render();renderChat()}));
   unsubs.push(onSnapshot(tasksCol,s=>{tasks=s.docs.map(d=>({id:d.id,...d.data()}));render()},()=>toast('Could not load tasks')));
   unsubs.push(onSnapshot(doc(db,'couple','shared','settings','main'),s=>{stg=s.data()||{};startDate=stg.startDate||'';renderHome();renderWed()},()=>{}));
   /* 'tikah added Wedding Savings + Restock data 10Nov2026 */
@@ -208,6 +232,7 @@ onAuthStateChanged(auth,async u=>{
   unsubs.push(onSnapshot(col('wbudget'),s=>{wbud={};s.forEach(d=>wbud[d.id]=d.data());renderWed()},()=>{}));
   unsubs.push(onSnapshot(col('wcheck'),s=>{wchk={};wcust=[];s.forEach(d=>{wchk[d.id]=d.data();if(d.data().custom)wcust.push({id:d.id,...d.data()})});renderWed()},()=>{}));
   unsubs.push(onSnapshot(col('restock'),s=>{stock=s.docs.map(d=>({id:d.id,...d.data()}));renderStock()},()=>{}));
+  unsubs.push(onSnapshot(query(col('messages'),orderBy('ts','desc'),limit(300)),s=>{mg=s.docs.map(d=>({id:d.id,...d.data()}));renderChat()},()=>{})); /* 'tikah added chat data 10Nov2026 */
   unsubs.push(onSnapshot(col('expenses'),s=>{ex=s.docs.map(d=>({id:d.id,...d.data()}));renderExp()},()=>{})); /* 'tikah added expenses data 10Nov2026 */
   unsubs.push(onSnapshot(col('events'),s=>{evs=s.docs.map(d=>({id:d.id,...d.data()}));renderCal()},()=>{})); /* 'tikah added events + bills data 10Nov2026 */
   unsubs.push(onSnapshot(col('bills'),s=>{bills=s.docs.map(d=>({id:d.id,...d.data()}));renderBills()},()=>{}));
@@ -228,7 +253,7 @@ function ask(title,fields,cb){
   $('g_t').textContent=title;
   $('g_f').innerHTML=fields.map(f=>'<small>'+esc(f.p)+'</small>'+(f.opts
     ?'<select data-k="'+f.k+'">'+f.opts.map(o=>'<option value="'+esc(o[0])+'"'+(o[0]===f.v?' selected':'')+'>'+esc(o[1])+'</option>').join('')+'</select>'
-    :'<input data-k="'+f.k+'" type="'+(f.t||'text')+'" value="'+esc(f.v==null?'':f.v)+'"'+(f.t==='number'?' inputmode="decimal" step="0.01" min="0"':'')+'>')).join('');
+    :f.t==='area'?'<textarea data-k="'+f.k+'" rows="4">'+esc(f.v==null?'':f.v)+'</textarea>':'<input data-k="'+f.k+'" type="'+(f.t||'text')+'" value="'+esc(f.v==null?'':f.v)+'"'+(f.t==='number'?' inputmode="decimal" step="0.01" min="0"':'')+'>')).join('');
   askCb=cb;$('gbg').classList.add('on');
 }
 $('g_cancel').onclick=()=>$('gbg').classList.remove('on');
@@ -333,6 +358,63 @@ $('exp').onclick=async e=>{
     if(x&&confirm('Delete this expense for both of you? This cannot be undone.'))await deleteDoc(doc(col('expenses'),x.dataset.x));
   }catch(err){toast('Something went wrong. Please try again.')}
 };
+
+/* 'tikah added Chat logic 10Nov2026 */
+let mg=[],mq='',mpin=false,msel='',chatOpen=false,seenT=null;const marking=new Set();
+const dayLabel=d=>d===ymd(new Date())?'Today':d===ymd(new Date(Date.now()-864e5))?'Yesterday':nice(d);
+const hm=t=>new Date(t).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+function touchSeen(){if(me)setDoc(doc(membersCol,me.uid),{lastSeen:Date.now()},{merge:true}).catch(()=>{})}
+function openChat(){touchSeen();clearInterval(seenT);seenT=setInterval(()=>chatOpen&&touchSeen(),60000);renderChat(true)}
+function renderChat(first){
+  if(!me||!$('msgs'))return;
+  const other=Object.keys(members).find(i=>i!==me.uid);
+  const last=[...mg].sort((a,b)=>b.ts-a.ts)[0];
+  $('h_cn').textContent='Chat with '+(other?who(other):'my love');
+  $('h_cm').textContent=last?(last.by===me.uid?'You: ':'')+last.text.slice(0,80):'Say hi ♡';
+  $('h_ct').textContent=last?hm(last.ts):'';
+  if(!chatOpen)return;
+  $('ch_n').textContent=other?who(other):'Chat';
+  const ls=other&&members[other].lastSeen;
+  $('ch_s').textContent=ls?'last seen '+(ymd(new Date(ls))===ymd(new Date())?'':nice(ymd(new Date(ls)))+' ')+hm(ls):'';
+  mg.filter(m=>m.by!==me.uid&&!(m.readBy||{})[me.uid]&&!marking.has(m.id)).forEach(m=>{marking.add(m.id);updateDoc(doc(col('messages'),m.id),{['readBy.'+me.uid]:Date.now()}).catch(()=>marking.delete(m.id))});
+  let l=[...mg].sort((a,b)=>a.ts-b.ts);const pins=l.filter(m=>m.pinned);
+  $('ch_pin').style.display=pins.length?'block':'none';
+  $('ch_pin').textContent=pins.length?'📌 '+pins[pins.length-1].text.slice(0,60)+(mpin?' · tap to show all':' · tap to show pinned only'):'';
+  if(mpin)l=pins;
+  if(mq)l=l.filter(m=>m.text.toLowerCase().includes(mq));
+  let h='',ld='';
+  l.forEach(m=>{
+    const d=ymd(new Date(m.ts)),mine=m.by===me.uid,read=other&&(m.readBy||{})[other];
+    if(d!==ld){ld=d;h+='<span class="day">'+dayLabel(d)+'</span>'}
+    h+='<div class="m'+(mine?' me':'')+(m.pinned?' pin':'')+'" data-mid="'+esc(m.id)+'">'+esc(m.text)+'<small>'+(m.pinned?'📌 ':'')+(m.edited?'edited · ':'')+hm(m.ts)+(mine?(read?' ✓✓':' ✓'):'')+'</small></div>';
+    if(msel===m.id)h+='<div class="act" style="align-self:'+(mine?'flex-end':'flex-start')+'"><button class="pill" data-pin="'+esc(m.id)+'">'+(m.pinned?'Unpin':'📌 Pin')+'</button>'+(mine?'<button class="pill" data-edit="'+esc(m.id)+'">✏️ Edit</button><button class="pill" data-del="'+esc(m.id)+'">🗑</button>':'')+'</div>';
+  });
+  const box=$('msgs'),atEnd=box.scrollHeight-box.scrollTop-box.clientHeight<90;
+  box.innerHTML=h||'<span class="day">Say hi to your love ♡</span>';
+  if(atEnd||first===true)box.scrollTop=box.scrollHeight;
+}
+async function sendMsg(){
+  const i=$('ch_i'),t=i.value.trim();if(!t)return;i.value='';
+  try{await addDoc(col('messages'),{text:t.slice(0,1000),by:me.uid,ts:Date.now(),readBy:{[me.uid]:Date.now()},createdAt:serverTimestamp()});touchSeen()}
+  catch(e){i.value=t;toast('Message not sent. Please try again.')}
+  i.focus();
+}
+$('ch_send').onclick=sendMsg;
+$('ch_i').addEventListener('keydown',e=>{if(e.key==='Enter')sendMsg()});
+$('ch_f').onclick=()=>{const s=$('ch_srch'),on=s.style.display==='none';s.style.display=on?'block':'none';if(on)$('ch_q').focus();else{mq='';$('ch_q').value='';renderChat()}};
+$('ch_q').oninput=e=>{mq=e.target.value.trim().toLowerCase();renderChat()};
+$('ch_pin').onclick=()=>{mpin=!mpin;renderChat()};
+$('msgs').onclick=async e=>{
+  const p=e.target.closest('[data-pin]'),ed=e.target.closest('[data-edit]'),d=e.target.closest('[data-del]'),m=e.target.closest('[data-mid]');
+  try{
+    if(p){const x=mg.find(z=>z.id===p.dataset.pin);msel='';if(x)await updateDoc(doc(col('messages'),x.id),{pinned:!x.pinned})}
+    else if(ed){const x=mg.find(z=>z.id===ed.dataset.edit);msel='';if(x)ask('Edit message',[{k:'text',p:'Message',t:'area',v:x.text}],v=>{if(!v.text)return false;return updateDoc(doc(col('messages'),x.id),{text:v.text.slice(0,1000),edited:true})})}
+    else if(d){msel='';if(confirm('Delete this message for both of you? This cannot be undone.'))await deleteDoc(doc(col('messages'),d.dataset.del))}
+    else if(m){msel=msel===m.dataset.mid?'':m.dataset.mid}
+    renderChat();
+  }catch(err){toast('Something went wrong. Please try again.')}
+};
+if(window.visualViewport){const vf=()=>{$('wrap').style.height=visualViewport.height+'px';window.scrollTo(0,0);if(chatOpen){const b=$('msgs');b.scrollTop=b.scrollHeight}};visualViewport.addEventListener('resize',vf);vf()}
 
 /* 'tikah added Calendar + Bills logic 10Nov2026 */
 let evs=[],bills=[],cm=ymd(new Date()).slice(0,7),cs=ymd(new Date()),bm=ymd(new Date()).slice(0,7);
