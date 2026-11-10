@@ -52,6 +52,9 @@ small,.mu{font-size:13px;color:var(--mu)}
 .bar i{display:block;height:100%;border-radius:9px;background:linear-gradient(90deg,var(--ac),#D8A7CF);transition:width 1s}
 .ic{width:38px;height:38px;border-radius:14px;background:var(--lav);display:grid;place-items:center;font-size:18px;flex:none}
 #g_f small{display:block;margin:8px 4px 0}
+/* 'tikah added Expenses styles 10Nov2026 */
+.donut{width:130px;height:130px;border-radius:50%;flex:none;display:grid;place-items:center}
+.donut div{width:78px;height:78px;border-radius:50%;background:var(--bg);display:grid;place-items:center;font:600 13px 'Fraunces',serif;text-align:center;padding:4px}
 .sheet{width:100%;max-height:92%;overflow-y:auto;background:var(--bg);border-radius:26px 26px 0 0;padding:20px 18px calc(22px + env(safe-area-inset-bottom,0px));animation:sl .35s cubic-bezier(.2,.9,.3,1.1)}
 @keyframes sl{from{transform:translateY(100%)}to{transform:none}}
 .sheet input,.sheet select,.sheet textarea{width:100%;border:0;border-radius:16px;background:var(--card);padding:12px 14px;font:16px 'DM Sans';color:var(--tx);margin:5px 0;outline:0}
@@ -98,15 +101,16 @@ small,.mu{font-size:13px;color:var(--mu)}
 <!-- 'tikah added Home, placeholders, date sheet, nav 10Nov2026 -->
 <section class="scr" id="home">
 <div class="card hero"><div class="row" id="av" style="justify-content:center"></div>
-<div class="big" id="days">♡</div><div style="font-weight:700">Days Together</div>
-<small style="color:#6d5a68">Another day, another memory together ♡</small>
+<div class="big" id="days">♡</div><div style="font-weight:700">Days Together</div><!-- 'tikah removed hero caption 10Nov2026 -->
 <div><button class="btn ghost" id="setd" style="margin-top:10px">Set our special date</button></div></div>
 <h2>Today</h2><div class="card" id="h_today"></div>
 <h2>Coming Up</h2><div class="card" id="h_up"></div>
 <h2>Completed This Week</h2><div class="card row" id="h_wk"></div>
 </section>
 <!-- 'tikah Restock + Wedding Savings screens 10Nov2026 -->
-<section class="scr" id="rest"><h1>Restock</h1>
+<!-- 'tikah added Expenses screen 10Nov2026 -->
+<section class="scr" id="exp"><h1>Expenses</h1><div id="e_body"></div><button class="btn fab" id="e_add">+ Expense</button></section>
+<section class="scr" id="rest"><button class="btn ghost" data-go="more">‹ Back</button><h1 style="margin-top:10px">Restock</h1>
 <div class="pills" id="r_c"></div><div class="card" id="r_l"></div>
 <small>Quick add</small><div class="pills" id="r_q" style="margin-top:6px"></div>
 <button class="btn fab" id="r_add">+ Add item</button></section>
@@ -115,7 +119,8 @@ small,.mu{font-size:13px;color:var(--mu)}
 <div id="gbg"><div class="sheet"><h2 id="g_t" style="margin-top:0"></h2><div id="g_f"></div>
 <div class="row" style="margin-top:14px"><button class="btn ghost sp" id="g_cancel">Cancel</button><button class="btn sp" id="g_save">Save</button></div></div></div>
 <section class="scr" id="cal"><h1>Calendar</h1><div class="card mu" style="text-align:center;margin-top:12px">Coming soon ♡</div></section>
-<section class="scr" id="more"><h1>More</h1><div class="card" style="margin-top:12px"><div class="li row" data-go="wed" style="cursor:pointer"><div class="ic">💍</div><div class="sp"><b>Wedding savings</b></div></div></div>
+<section class="scr" id="more"><h1>More</h1><div class="card" style="margin-top:12px"><div class="li row" data-go="wed" style="cursor:pointer"><div class="ic">💍</div><div class="sp"><b>Wedding savings</b></div></div>
+<div class="li row" data-go="rest" style="cursor:pointer"><div class="ic">🛒</div><div class="sp"><b>Restock</b></div></div></div>
 <div class="card mu" style="text-align:center;margin-bottom:12px">More things are coming soon ♡</div><button class="btn ghost" id="bout2">Sign out</button></section>
 <div id="dbg"><div class="sheet"><h2 style="margin-top:0">Our special date ♡</h2><small>The day our story started. We’ll count the days together.</small>
 <input id="d_in" type="date"><div class="row" style="margin-top:10px"><button class="btn ghost sp" id="d_cancel">Cancel</button><button class="btn sp" id="d_save">Save</button></div></div></div>
@@ -143,11 +148,12 @@ const membersCol=collection(db,'couple','shared','members');
 let me=null,members={},tasks=[],fp='all',fs='open',unsubs=[];
 
 function esc(s){const d=document.createElement('div');d.textContent=s==null?'':String(s);return d.innerHTML}
-const TABS=['home','tasks','rest','cal','more']; /* 'tikah nav tabs 10Nov2026 */
+const TABS=['home','tasks','exp','cal','more']; /* 'tikah nav tabs 10Nov2026 */
 function show(id){
   document.querySelectorAll('.scr').forEach(s=>s.classList.toggle('on',s.id===id));
-  $('nav').style.display=TABS.includes(id)||id==='wed'?'flex':'none';
-  document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===(id==='wed'?'more':id)));
+  const sub=['wed','rest'].includes(id);
+  $('nav').style.display=TABS.includes(id)||sub?'flex':'none';
+  document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===(sub?'more':id)));
   const e=$(id);if(e)e.scrollTop=0;
 }
 function toast(t){const e=$('toast');e.textContent=t;e.classList.add('on');setTimeout(()=>e.classList.remove('on'),2600)}
@@ -191,6 +197,7 @@ onAuthStateChanged(auth,async u=>{
   unsubs.push(onSnapshot(col('wbudget'),s=>{wbud={};s.forEach(d=>wbud[d.id]=d.data());renderWed()},()=>{}));
   unsubs.push(onSnapshot(col('wcheck'),s=>{wchk={};wcust=[];s.forEach(d=>{wchk[d.id]=d.data();if(d.data().custom)wcust.push({id:d.id,...d.data()})});renderWed()},()=>{}));
   unsubs.push(onSnapshot(col('restock'),s=>{stock=s.docs.map(d=>({id:d.id,...d.data()}));renderStock()},()=>{}));
+  unsubs.push(onSnapshot(col('expenses'),s=>{ex=s.docs.map(d=>({id:d.id,...d.data()}));renderExp()},()=>{})); /* 'tikah added expenses data 10Nov2026 */
   show('home'); /* 'tikah Home is first screen 10Nov2026 */
 });
 
@@ -274,9 +281,49 @@ $('rest').onclick=async e=>{
 };
 $('r_add').onclick=()=>ask('Add item',[{k:'name',p:'Item name'},{k:'qty',p:'Quantity (optional)'},{k:'cat',p:'Category',opts:SCAT.map(c=>[c,c]),v:rc==='all'?'Groceries':rc},{k:'note',p:'Note (optional)'},{k:'link',p:'Shopping link (optional)',t:'url'}],v=>{if(!v.name){toast('Please type the item name');return false}if(v.link&&!/^https?:\/\//i.test(v.link)){toast('Link must start with http:// or https://');return false}return addDoc(col('restock'),{name:v.name.slice(0,60),qty:v.qty.slice(0,20),cat:v.cat,note:v.note.slice(0,120),link:v.link,bought:false,by:me.uid,createdAt:serverTimestamp()})});
 
+/* 'tikah added Expenses logic 10Nov2026 */
+let ex=[],em=ymd(new Date()).slice(0,7),ef='all',ep='all';
+const ECAT=[['Food','#E88EAF'],['Household','#D8A7CF'],['Transport','#F4B6A6'],['Bills','#B85C83'],['Dates','#BFA8E8'],['Shopping','#8FD1C2'],['Wedding','#F28BB0'],['Other','#CDB8C4']];
+function renderExp(){
+  if(!me||!$('e_body'))return;
+  const ids=Object.keys(members).sort((a,b)=>who(a).localeCompare(who(b)));
+  const mon=ex.filter(x=>x.date.slice(0,7)===em),tot=mon.reduce((a,x)=>a+x.amount,0),by={};
+  mon.forEach(x=>by[x.cat]=(by[x.cat]||0)+x.amount);
+  let acc=0;
+  const seg=ECAT.filter(c=>by[c[0]]).map(c=>{const s=acc/tot*100;acc+=by[c[0]];return c[1]+' '+s+'% '+(acc/tot*100)+'%'});
+  const lab=new Date(em+'-01T00:00').toLocaleDateString('en-GB',{month:'long',year:'numeric'});
+  let h='<div class="row" style="margin:6px 0 12px"><button class="pill" data-m="-1">‹</button><b class="sp" style="text-align:center">'+lab+'</b><button class="pill" data-m="1">›</button></div>';
+  h+='<div class="card row"><div class="donut" style="background:'+(tot?'conic-gradient('+seg.join(',')+')':'var(--s)')+'"><div>'+RM(tot)+'</div></div><div class="sp" style="font-size:14px">'+(ECAT.filter(c=>by[c[0]]).map(c=>'<div><span class="dot" style="background:'+c[1]+'"></span>'+c[0]+' '+RM(by[c[0]])+'</div>').join('')||'<span class="mu">No spending yet ♡</span>')+'</div></div>';
+  h+='<div class="card row">'+ids.map(i=>'<div class="sp"><small>Paid by '+esc(who(i))+'</small><b style="font:600 20px Fraunces,serif;display:block">'+RM(mon.filter(x=>x.by===i).reduce((a,x)=>a+x.amount,0))+'</b></div>').join('')+'</div>';
+  h+='<div class="pills">'+['All'].concat(ECAT.map(c=>c[0])).map(c=>'<button class="pill'+((ef==='all'?'All':ef)===c?' on':'')+'" data-ec="'+c+'">'+c+'</button>').join('')+'</div>';
+  h+='<div class="pills"><button class="pill'+(ep==='all'?' on':'')+'" data-ep="all">Everyone</button>'+ids.map(i=>'<button class="pill'+(ep===i?' on':'')+'" data-ep="'+esc(i)+'">'+esc(who(i))+'</button>').join('')+'</div>';
+  const l=mon.filter(x=>(ef==='all'||x.cat===ef)&&(ep==='all'||x.by===ep)).sort((a,b)=>b.date.localeCompare(a.date));
+  h+='<div class="card">'+(l.length?l.map(x=>'<div class="li row"><span class="dot" style="background:'+((ECAT.find(c=>c[0]===x.cat)||[0,'#CDB8C4'])[1])+'"></span><div class="sp" data-e="'+esc(x.id)+'" style="cursor:pointer"><b>'+esc(x.desc||x.cat)+'</b><small>'+nice(x.date)+' · paid by '+esc(who(x.by))+' · '+esc(x.cat)+'</small></div><b>'+RM(x.amount)+'</b><button class="x" data-x="'+esc(x.id)+'">🗑</button></div>').join(''):'<span class="mu">Nothing here yet. Tap “+ Expense” ♡</span>')+'</div>';
+  $('e_body').innerHTML=h;
+}
+function expForm(x){
+  x=x||{};
+  ask(x.id?'Edit expense':'Add expense',[{k:'amount',p:'Amount (RM)',t:'number',v:x.amount},{k:'cat',p:'Category',opts:ECAT.map(c=>[c[0],c[0]]),v:x.cat||'Food'},{k:'date',p:'Date',t:'date',v:x.date||ymd(new Date())},{k:'by',p:'Who paid',opts:Object.keys(members).map(u=>[u,who(u)]),v:x.by||me.uid},{k:'desc',p:'Description (optional)',v:x.desc}],v=>{
+    const n=+v.amount;if(!(n>0)||!v.date){toast('Please enter an amount and date');return false}
+    const d={amount:n,cat:v.cat,date:v.date,by:v.by||me.uid,desc:v.desc.slice(0,80)};
+    return x.id?updateDoc(doc(col('expenses'),x.id),d):addDoc(col('expenses'),{...d,createdBy:me.uid,createdAt:serverTimestamp()});
+  });
+}
+$('e_add').onclick=()=>expForm();
+$('exp').onclick=async e=>{
+  const m=e.target.closest('[data-m]'),c=e.target.closest('[data-ec]'),p=e.target.closest('[data-ep]'),ed=e.target.closest('[data-e]'),x=e.target.closest('[data-x]');
+  try{
+    if(m){const d=new Date(em+'-01T00:00');d.setMonth(d.getMonth()+(+m.dataset.m));em=ymd(d).slice(0,7);renderExp()}
+    if(c){ef=c.dataset.ec==='All'?'all':c.dataset.ec;renderExp()}
+    if(p){ep=p.dataset.ep;renderExp()}
+    if(ed){const y=ex.find(z=>z.id===ed.dataset.e);if(y)expForm(y)}
+    if(x&&confirm('Delete this expense for both of you? This cannot be undone.'))await deleteDoc(doc(col('expenses'),x.dataset.x));
+  }catch(err){toast('Something went wrong. Please try again.')}
+};
+
 /* 'tikah added Home screen logic + nav 10Nov2026 */
 let startDate='';
-$('nav').innerHTML=[['home','Home','<path d="M4 11l8-7 8 7v9H4z"/>'],['tasks','Tasks','<circle cx="12" cy="12" r="8"/><path d="M8.5 12l2.5 2.5 4.5-5"/>'],['rest','Restock','<path d="M5 7h14l-1.5 12h-11z"/><path d="M9 7a3 3 0 016 0"/>'],['cal','Calendar','<rect x="4" y="5" width="16" height="15" rx="3"/><path d="M4 10h16M9 3v4M15 3v4"/>'],['more','More','<circle cx="6" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="18" cy="12" r="1"/>']].map(t=>'<button data-t="'+t[0]+'"><svg viewBox="0 0 24 24">'+t[2]+'</svg>'+t[1]+'</button>').join('');
+$('nav').innerHTML=[['home','Home','<path d="M4 11l8-7 8 7v9H4z"/>'],['tasks','Tasks','<circle cx="12" cy="12" r="8"/><path d="M8.5 12l2.5 2.5 4.5-5"/>'],['exp','Expenses','<circle cx="12" cy="12" r="8"/><path d="M14.5 9.5c-.5-1-1.400-1.500-2.500-1.500-1.400 0-2.500.8-2.500 2s1.100 1.700 2.500 2 2.500.8 2.500 2-1.100 2-2.500 2c-1.100 0-2-.5-2.500-1.500M12 6v2M12 16v2"/>'],['cal','Calendar','<rect x="4" y="5" width="16" height="15" rx="3"/><path d="M4 10h16M9 3v4M15 3v4"/>'],['more','More','<circle cx="6" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="18" cy="12" r="1"/>']].map(t=>'<button data-t="'+t[0]+'"><svg viewBox="0 0 24 24">'+t[2]+'</svg>'+t[1]+'</button>').join('');
 $('nav').onclick=e=>{const b=e.target.closest('button');if(b)show(b.dataset.t)};
 $('bout2').onclick=()=>signOut(auth);
 function homeItem(t,today){
