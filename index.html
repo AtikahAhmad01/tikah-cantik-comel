@@ -3,6 +3,14 @@
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Our Future</title>
+<!-- 'tikah added PWA tags 10Nov2026 -->
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#E88EAF">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Our Future">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Fraunces:wght@600&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#FFF5F8;--g:#FFE0EB;--s:#F9D5E2;--card:rgba(255,255,255,.93);--tx:#382A35;--mu:#9B8493;--ac:#E88EAF;--lav:#E9DFFF;--rose:#B85C83;--dv:#F3E4EB;--pill:#fff;color-scheme:light}
@@ -210,4 +218,6 @@ $('t_save').onclick=async()=>{
     $('sheetbg').classList.remove('on');toast('Saved ♡');
   }catch(e){toast('Could not save. Please try again.')}
 };
+/* 'tikah added service worker registration 10Nov2026 */
+if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
 </script></body></html>
