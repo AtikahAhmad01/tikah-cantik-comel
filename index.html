@@ -14,7 +14,9 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Fraunces:wght@600&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#FFF5F8;--g:#FFE0EB;--s:#F9D5E2;--card:rgba(255,255,255,.93);--tx:#382A35;--mu:#9B8493;--ac:#E88EAF;--lav:#E9DFFF;--rose:#B85C83;--dv:#F3E4EB;--pill:#fff;color-scheme:light}
-@media(prefers-color-scheme:dark){:root{--bg:#19141D;--g:#2c2133;--s:#3a2a3e;--card:rgba(40,32,45,.93);--tx:#FFF0F6;--mu:#BDAAB9;--ac:#E99ABA;--lav:#3b2f55;--dv:#3a2f40;--rose:#A95D83;--pill:#28202D;color-scheme:dark}}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#19141D;--g:#2c2133;--s:#3a2a3e;--card:rgba(40,32,45,.93);--tx:#FFF0F6;--mu:#BDAAB9;--ac:#E99ABA;--lav:#3b2f55;--dv:#3a2f40;--rose:#A95D83;--pill:#28202D;color-scheme:dark}}
+:root[data-theme=dark]{--bg:#19141D;--g:#2c2133;--s:#3a2a3e;--card:rgba(40,32,45,.93);--tx:#FFF0F6;--mu:#BDAAB9;--ac:#E99ABA;--lav:#3b2f55;--dv:#3a2f40;--rose:#A95D83;--pill:#28202D;color-scheme:dark}
+:root[data-theme=light]{color-scheme:light}
 *{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}
 html,body{height:100%}
 body{font:400 16px/1.4 'DM Sans',system-ui,sans-serif;color:var(--tx);background:var(--bg);display:flex;justify-content:center}
@@ -140,6 +142,12 @@ small,.mu{font-size:13px;color:var(--mu)}
 <button class="btn fab" id="w_add">+ Add savings</button></section>
 <div id="gbg"><div class="sheet"><h2 id="g_t" style="margin-top:0"></h2><div id="g_f"></div>
 <div class="row" style="margin-top:14px"><button class="btn ghost sp" id="g_cancel">Cancel</button><button class="btn sp" id="g_save">Save</button></div></div></div>
+<!-- 'tikah added Notes, Wishlist, Goals, Recipes, Settings screens 10Nov2026 -->
+<section class="scr" id="notes"><button class="btn ghost" data-go="more">‹ Back</button><h1 style="margin:10px 0">Notes</h1><div id="n_body"></div><button class="btn fab" id="n_add">+ Note</button></section>
+<section class="scr" id="wish"><button class="btn ghost" data-go="more">‹ Back</button><h1 style="margin:10px 0">Wishlist</h1><div id="wi_body"></div><button class="btn fab" id="wi_add">+ Wish</button></section>
+<section class="scr" id="goals"><button class="btn ghost" data-go="more">‹ Back</button><h1 style="margin:10px 0">Savings Goals</h1><div id="go_body"></div><button class="btn fab" id="go_add">+ Goal</button></section>
+<section class="scr" id="recipes"><button class="btn ghost" data-go="more">‹ Back</button><h1 style="margin:10px 0">Recipes</h1><div id="rc_body"></div><button class="btn fab" id="rc_add">+ Recipe</button></section>
+<section class="scr" id="settings"><button class="btn ghost" data-go="more">‹ Back</button><h1 style="margin:10px 0">Settings</h1><div id="s_body"></div></section>
 <!-- 'tikah added Chat screen 10Nov2026 -->
 <section class="scr" id="chat">
 <div class="ch-h"><button class="x" data-go="home" aria-label="Back">‹</button><div class="sp"><b id="ch_n">Chat</b><br><small id="ch_s"></small></div><button class="x" id="ch_f" aria-label="Search" style="font-size:18px">🔍</button></div>
@@ -154,8 +162,12 @@ small,.mu{font-size:13px;color:var(--mu)}
 <section class="scr" id="more"><h1>More</h1><div class="card" style="margin-top:12px"><div class="li row" data-go="chat" style="cursor:pointer"><div class="ic">💬</div><div class="sp"><b>Couple chat</b></div></div>
 <div class="li row" data-go="wed" style="cursor:pointer"><div class="ic">💍</div><div class="sp"><b>Wedding savings</b></div></div>
 <div class="li row" data-go="rest" style="cursor:pointer"><div class="ic">🛒</div><div class="sp"><b>Restock</b></div></div>
+<div class="li row" data-go="notes" style="cursor:pointer"><div class="ic">📝</div><div class="sp"><b>Notes</b></div></div>
+<div class="li row" data-go="wish" style="cursor:pointer"><div class="ic">🌟</div><div class="sp"><b>Wishlist</b></div></div>
+<div class="li row" data-go="goals" style="cursor:pointer"><div class="ic">🐷</div><div class="sp"><b>Savings goals</b></div></div>
+<div class="li row" data-go="recipes" style="cursor:pointer"><div class="ic">🍳</div><div class="sp"><b>Recipes</b></div></div>
 <div class="li row" data-go="bills" style="cursor:pointer"><div class="ic">🧾</div><div class="sp"><b>Monthly bills</b></div></div></div>
-<div class="card mu" style="text-align:center;margin-bottom:12px">More things are coming soon ♡</div><button class="btn ghost" id="bout2">Sign out</button></section>
+<div class="card mu" style="text-align:center;margin-bottom:12px">Memories (photos) are coming soon ♡</div><div class="card" style="margin-bottom:12px"><div class="li row" data-go="settings" style="cursor:pointer"><div class="ic">⚙️</div><div class="sp"><b>Settings</b></div></div></div><button class="btn ghost" id="bout2">Sign out</button></section>
 <div id="dbg"><div class="sheet"><h2 style="margin-top:0">Our special date ♡</h2><small>The day our story started. We’ll count the days together.</small>
 <input id="d_in" type="date"><div class="row" style="margin-top:10px"><button class="btn ghost sp" id="d_cancel">Cancel</button><button class="btn sp" id="d_save">Save</button></div></div></div>
 <nav class="nav" id="nav"></nav>
@@ -165,7 +177,7 @@ small,.mu{font-size:13px;color:var(--mu)}
 <script type="module">
 import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {getAuth,GoogleAuthProvider,signInWithPopup,onAuthStateChanged,signOut} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import {getFirestore,collection,doc,setDoc,addDoc,updateDoc,deleteDoc,onSnapshot,serverTimestamp,query,orderBy,limit} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import {getFirestore,collection,doc,setDoc,addDoc,updateDoc,deleteDoc,onSnapshot,serverTimestamp,query,orderBy,limit,getDocs,getDoc} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const app=initializeApp({
   apiKey:"AIzaSyB-CUns7cqapdFUs3fHEG3p26mVQLu2cbA",
@@ -185,7 +197,7 @@ function esc(s){const d=document.createElement('div');d.textContent=s==null?'':S
 const TABS=['home','tasks','exp','cal','more']; /* 'tikah nav tabs 10Nov2026 */
 function show(id){
   document.querySelectorAll('.scr').forEach(s=>s.classList.toggle('on',s.id===id));
-  const sub=['wed','rest','bills'].includes(id);
+  const sub=['wed','rest','bills','notes','wish','goals','recipes','settings'].includes(id);
   $('nav').style.display=TABS.includes(id)||sub?'flex':'none';
   document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===(sub?'more':id)));
   const e=$(id);if(e)e.scrollTop=0;
@@ -224,15 +236,20 @@ onAuthStateChanged(auth,async u=>{
     $('lerr').textContent='Sorry, this Google account is not allowed in our private space.';
     await signOut(auth);return;
   }
-  unsubs.push(onSnapshot(membersCol,s=>{members={};s.forEach(d=>members[d.id]=d.data());askNick();fillWho();buildFp();render();renderChat()}));
+  unsubs.push(onSnapshot(membersCol,s=>{members={};s.forEach(d=>members[d.id]=d.data());askNick();fillWho();buildFp();render();renderChat();renderSettings()}));
   unsubs.push(onSnapshot(tasksCol,s=>{tasks=s.docs.map(d=>({id:d.id,...d.data()}));render()},()=>toast('Could not load tasks')));
-  unsubs.push(onSnapshot(doc(db,'couple','shared','settings','main'),s=>{stg=s.data()||{};startDate=stg.startDate||'';renderHome();renderWed()},()=>{}));
+  unsubs.push(onSnapshot(doc(db,'couple','shared','settings','main'),s=>{stg=s.data()||{};startDate=stg.startDate||'';renderHome();renderWed();renderSettings()},()=>{}));
   /* 'tikah added Wedding Savings + Restock data 10Nov2026 */
   unsubs.push(onSnapshot(col('wsave'),s=>{wsave=s.docs.map(d=>({id:d.id,...d.data()}));renderWed()},()=>{}));
   unsubs.push(onSnapshot(col('wbudget'),s=>{wbud={};s.forEach(d=>wbud[d.id]=d.data());renderWed()},()=>{}));
   unsubs.push(onSnapshot(col('wcheck'),s=>{wchk={};wcust=[];s.forEach(d=>{wchk[d.id]=d.data();if(d.data().custom)wcust.push({id:d.id,...d.data()})});renderWed()},()=>{}));
   unsubs.push(onSnapshot(col('restock'),s=>{stock=s.docs.map(d=>({id:d.id,...d.data()}));renderStock()},()=>{}));
   unsubs.push(onSnapshot(query(col('messages'),orderBy('ts','desc'),limit(300)),s=>{mg=s.docs.map(d=>({id:d.id,...d.data()}));renderChat()},()=>{})); /* 'tikah added chat data 10Nov2026 */
+  unsubs.push(onSnapshot(col('notes'),s=>{notes=s.docs.map(d=>({id:d.id,...d.data()}));renderNotes()},()=>{})); /* 'tikah added notes/wishes/goals/recipes data 10Nov2026 */
+  unsubs.push(onSnapshot(col('wishes'),s=>{wishes=s.docs.map(d=>({id:d.id,...d.data()}));renderWish()},()=>{}));
+  unsubs.push(onSnapshot(col('goals'),s=>{goals=s.docs.map(d=>({id:d.id,...d.data()}));renderGoals()},()=>{}));
+  unsubs.push(onSnapshot(col('gsave'),s=>{gsv=s.docs.map(d=>({id:d.id,...d.data()}));renderGoals()},()=>{}));
+  unsubs.push(onSnapshot(col('recipes'),s=>{recs=s.docs.map(d=>({id:d.id,...d.data()}));renderRecipes()},()=>{}));
   unsubs.push(onSnapshot(col('expenses'),s=>{ex=s.docs.map(d=>({id:d.id,...d.data()}));renderExp()},()=>{})); /* 'tikah added expenses data 10Nov2026 */
   unsubs.push(onSnapshot(col('events'),s=>{evs=s.docs.map(d=>({id:d.id,...d.data()}));renderCal()},()=>{})); /* 'tikah added events + bills data 10Nov2026 */
   unsubs.push(onSnapshot(col('bills'),s=>{bills=s.docs.map(d=>({id:d.id,...d.data()}));renderBills()},()=>{}));
@@ -358,6 +375,153 @@ $('exp').onclick=async e=>{
     if(x&&confirm('Delete this expense for both of you? This cannot be undone.'))await deleteDoc(doc(col('expenses'),x.dataset.x));
   }catch(err){toast('Something went wrong. Please try again.')}
 };
+
+/* 'tikah added Notes, Wishlist, Goals, Recipes, Settings logic 10Nov2026 */
+try{const t=localStorage.getItem('theme');if(t&&t!=='auto')document.documentElement.setAttribute('data-theme',t)}catch(e){}
+let notes=[],wishes=[],goals=[],gsv=[],recs=[],wcf='all',rcf='all',gopen='',ropen='';
+const WCAT=['Travel','Food','Shopping','Experiences','Date Ideas','Future Home','Future Plans'];
+const lnk=l=>{if(!/^https?:\/\//i.test(l||''))return '';try{return ' · <a href="'+esc(l)+'" target="_blank" rel="noopener noreferrer" style="color:var(--rose)">'+esc(new URL(l).hostname.replace(/^www\./,''))+'</a>'}catch(e){return ''}};
+const okLink=v=>!v||/^https?:\/\//i.test(v);
+const safe=async f=>{try{await f()}catch(err){toast('Something went wrong. Please try again.')}};
+const members_=()=>Object.keys(members).map(u=>[u,who(u)]);
+const empty=t=>'<div class="card mu" style="text-align:center">'+t+'</div>';
+
+/* ---- Notes ---- */
+function renderNotes(){
+  if(!me||!$('n_body'))return;
+  const l=[...notes].sort((a,b)=>(b.pinned?1:0)-(a.pinned?1:0)||(b.updatedAt||0)-(a.updatedAt||0));
+  $('n_body').innerHTML=l.length?l.map(n=>'<div class="card"><div class="row"><div class="sp" data-ne="'+esc(n.id)+'" style="cursor:pointer"><b>'+(n.pinned?'📌 ':'')+esc(n.title||'Untitled')+'</b></div><button class="pill" data-np="'+esc(n.id)+'">'+(n.pinned?'Unpin':'📌 Pin')+'</button><button class="x" data-nx="'+esc(n.id)+'">🗑</button></div>'
+    +(n.type==='list'?(n.items||[]).map((it,i)=>'<div class="li row'+(it.d?' done':'')+'"><button class="chk'+(it.d?' on':'')+'" data-nc="'+esc(n.id)+':'+i+'">'+(it.d?'✓':'')+'</button><div class="sp"><b>'+esc(it.t)+'</b></div></div>').join(''):'<div style="white-space:pre-wrap;margin-top:6px">'+esc(n.body)+'</div>')
+    +'<small style="display:block;margin-top:8px">By '+esc(who(n.by))+' · updated '+nice(ymd(new Date(n.updatedAt||Date.now())))+(n.updatedBy&&n.updatedBy!==n.by?' by '+esc(who(n.updatedBy)):'')+'</small></div>').join(''):empty('No notes yet ♡');
+}
+function noteForm(x){
+  x=x||{};
+  ask(x.id?'Edit note':'New note',[{k:'title',p:'Title',v:x.title},{k:'type',p:'Type',opts:[['text','Text note'],['list','Checklist (one item per line)']],v:x.type||'text'},{k:'body',p:'Content',t:'area',v:x.type==='list'?(x.items||[]).map(i=>i.t).join('\n'):x.body}],v=>{
+    if(!v.title&&!v.body){toast('Please write something');return false}
+    const d={title:v.title.slice(0,80),type:v.type,updatedAt:Date.now(),updatedBy:me.uid};
+    if(v.type==='list'){const old=x.items||[];d.items=v.body.split('\n').map(t=>t.trim()).filter(Boolean).slice(0,60).map(t=>({t:t.slice(0,120),d:!!(old.find(o=>o.t===t)||{}).d}));d.body=''}
+    else{d.body=v.body.slice(0,4000);d.items=[]}
+    return x.id?updateDoc(doc(col('notes'),x.id),d):addDoc(col('notes'),{...d,pinned:false,by:me.uid,createdAt:serverTimestamp()});
+  });
+}
+$('n_add').onclick=()=>noteForm();
+$('notes').onclick=e=>safe(async()=>{
+  const p=e.target.closest('[data-np]'),ed=e.target.closest('[data-ne]'),x=e.target.closest('[data-nx]'),c=e.target.closest('[data-nc]');
+  if(p){const n=notes.find(z=>z.id===p.dataset.np);if(n)await updateDoc(doc(col('notes'),n.id),{pinned:!n.pinned})}
+  if(ed){const n=notes.find(z=>z.id===ed.dataset.ne);if(n)noteForm(n)}
+  if(x&&confirm('Delete this note for both of you? This cannot be undone.'))await deleteDoc(doc(col('notes'),x.dataset.nx));
+  if(c){const [id,i]=c.dataset.nc.split(':'),n=notes.find(z=>z.id===id);if(n){const it=[...n.items];it[+i]={...it[+i],d:!it[+i].d};await updateDoc(doc(col('notes'),id),{items:it,updatedAt:Date.now(),updatedBy:me.uid})}}
+});
+
+/* ---- Wishlist ---- */
+function renderWish(){
+  if(!me||!$('wi_body'))return;
+  const l=wishes.filter(w=>wcf==='all'||w.cat===wcf).sort((a,b)=>(a.done?1:0)-(b.done?1:0)||a.title.localeCompare(b.title));
+  $('wi_body').innerHTML='<div class="pills">'+['All'].concat(WCAT).map(c=>'<button class="pill'+((wcf==='all'?'All':wcf)===c?' on':'')+'" data-wc="'+c+'">'+c+'</button>').join('')+'</div><div class="card">'
+    +(l.length?l.map(w=>'<div class="li row'+(w.done?' done':'')+'"><button class="chk'+(w.done?' on':'')+'" data-wt="'+esc(w.id)+'">'+(w.done?'✓':'')+'</button><div class="sp" data-we="'+esc(w.id)+'" style="cursor:pointer"><b>'+esc(w.title)+'</b><small>'+esc(w.cat)+(w.cost?' · about '+RM(w.cost):'')+' · added by '+esc(who(w.by))+lnk(w.link)+'</small>'+(w.desc?'<small style="display:block">'+esc(w.desc)+'</small>':'')+'</div><button class="x" data-wx="'+esc(w.id)+'">🗑</button></div>').join(''):'<span class="mu">No wishes yet ♡</span>')+'</div>';
+}
+function wishForm(x){
+  x=x||{};
+  ask(x.id?'Edit wish':'New wish',[{k:'title',p:'Wish',v:x.title},{k:'desc',p:'Description (optional)',v:x.desc},{k:'cat',p:'Category',opts:WCAT.map(c=>[c,c]),v:x.cat||(wcf==='all'?'Travel':wcf)},{k:'cost',p:'Estimated cost (RM, optional)',t:'number',v:x.cost},{k:'link',p:'Link (optional)',t:'url',v:x.link}],v=>{
+    if(!v.title){toast('Please type your wish');return false}
+    if(!okLink(v.link)){toast('Link must start with http:// or https://');return false}
+    const d={title:v.title.slice(0,80),desc:v.desc.slice(0,200),cat:v.cat,cost:+v.cost||0,link:v.link};
+    return x.id?updateDoc(doc(col('wishes'),x.id),d):addDoc(col('wishes'),{...d,done:false,by:me.uid,createdAt:serverTimestamp()});
+  });
+}
+$('wi_add').onclick=()=>wishForm();
+$('wish').onclick=e=>safe(async()=>{
+  const c=e.target.closest('[data-wc]'),t=e.target.closest('[data-wt]'),ed=e.target.closest('[data-we]'),x=e.target.closest('[data-wx]');
+  if(c){wcf=c.dataset.wc==='All'?'all':c.dataset.wc;renderWish()}
+  if(t){const w=wishes.find(z=>z.id===t.dataset.wt);if(w)await updateDoc(doc(col('wishes'),w.id),{done:!w.done})}
+  if(ed){const w=wishes.find(z=>z.id===ed.dataset.we);if(w)wishForm(w)}
+  if(x&&confirm('Delete this wish for both of you?'))await deleteDoc(doc(col('wishes'),x.dataset.wx));
+});
+
+/* ---- Savings goals ---- */
+function renderGoals(){
+  if(!me||!$('go_body'))return;
+  $('go_body').innerHTML=goals.length?goals.map(g=>{
+    const tx=gsv.filter(t=>t.goal===g.id),sv=tx.reduce((a,t)=>a+t.amount,0),pct=g.target?Math.min(100,Math.round(sv/g.target*100)):0;
+    let h='<div class="card"><div class="row"><div class="sp" data-ge="'+esc(g.id)+'" style="cursor:pointer"><b>'+esc(g.name)+'</b><small>'+(g.owner==='shared'?'Shared':esc(who(g.owner)))+(g.date?' · target '+nice(g.date):'')+'</small></div><button class="x" data-gx="'+esc(g.id)+'">🗑</button></div><div class="bar"><i style="width:'+pct+'%"></i></div><small>'+RM(sv)+' of '+RM(g.target)+' · '+pct+'%</small><div class="row" style="margin-top:8px"><button class="pill on" data-ga="'+esc(g.id)+'">+ Add money</button><button class="pill" data-gh="'+esc(g.id)+'">History ('+tx.length+')</button></div>';
+    if(gopen===g.id)h+='<div style="margin-top:8px">'+(tx.length?[...tx].sort((a,b)=>b.date.localeCompare(a.date)).map(t=>'<div class="li row"><div class="sp"><b>'+RM(t.amount)+'</b><small>'+nice(t.date)+' · '+esc(who(t.by))+(t.note?' · '+esc(t.note):'')+'</small></div><button class="x" data-gtx="'+esc(t.id)+'">🗑</button></div>').join(''):'<span class="mu">No money added yet</span>')+'</div>';
+    return h+'</div>';
+  }).join(''):empty('No goals yet. Tap “+ Goal” ♡');
+}
+function goalForm(x){
+  x=x||{};
+  ask(x.id?'Edit goal':'New goal',[{k:'name',p:'Goal name (e.g. Holiday fund)',v:x.name},{k:'target',p:'Target amount (RM)',t:'number',v:x.target},{k:'date',p:'Target date (optional)',t:'date',v:x.date},{k:'owner',p:'Whose goal',opts:[['shared','Shared']].concat(members_()),v:x.owner||'shared'}],v=>{
+    if(!v.name||!(+v.target>0)){toast('Please add a name and target');return false}
+    const d={name:v.name.slice(0,60),target:+v.target,date:v.date,owner:v.owner};
+    return x.id?updateDoc(doc(col('goals'),x.id),d):addDoc(col('goals'),{...d,createdBy:me.uid,createdAt:serverTimestamp()});
+  });
+}
+$('go_add').onclick=()=>goalForm();
+$('goals').onclick=e=>safe(async()=>{
+  const a=e.target.closest('[data-ga]'),h=e.target.closest('[data-gh]'),ed=e.target.closest('[data-ge]'),x=e.target.closest('[data-gx]'),t=e.target.closest('[data-gtx]');
+  if(a){const id=a.dataset.ga;ask('Add money',[{k:'amount',p:'Amount (RM)',t:'number'},{k:'date',p:'Date',t:'date',v:ymd(new Date())},{k:'by',p:'Who saved',opts:members_(),v:me.uid},{k:'note',p:'Note (optional)'}],v=>{const n=+v.amount;if(!(n>0)||!v.date){toast('Please enter an amount and date');return false}return addDoc(col('gsave'),{goal:id,amount:n,date:v.date,by:v.by||me.uid,note:v.note.slice(0,80),createdAt:serverTimestamp()})})}
+  if(h){gopen=gopen===h.dataset.gh?'':h.dataset.gh;renderGoals()}
+  if(ed){const g=goals.find(z=>z.id===ed.dataset.ge);if(g)goalForm(g)}
+  if(t&&confirm('Delete this savings entry for both of you? This cannot be undone.'))await deleteDoc(doc(col('gsave'),t.dataset.gtx));
+  if(x&&confirm('Delete this goal AND all its savings history for both of you? This cannot be undone.')){const id=x.dataset.gx;await Promise.all(gsv.filter(z=>z.goal===id).map(z=>deleteDoc(doc(col('gsave'),z.id))));await deleteDoc(doc(col('goals'),id))}
+});
+
+/* ---- Recipes ---- */
+function renderRecipes(){
+  if(!me||!$('rc_body'))return;
+  const l=recs.filter(r=>rcf==='all'||r.fav).sort((a,b)=>a.name.localeCompare(b.name));
+  let h='<div class="pills"><button class="pill'+(rcf==='all'?' on':'')+'" data-rf="all">All</button><button class="pill'+(rcf==='fav'?' on':'')+'" data-rf="fav">❤ Favourites</button></div>';
+  h+=l.length?l.map(r=>{
+    let c='<div class="card"><div class="row"><div class="sp" data-rv="'+esc(r.id)+'" style="cursor:pointer"><b>'+esc(r.name)+'</b><small>'+[r.time,r.cat,'by '+who(r.by)].filter(Boolean).map(t=>esc(t)).join(' · ')+'</small></div><button class="x" data-rfav="'+esc(r.id)+'" style="font-size:22px">'+(r.fav?'❤️':'🤍')+'</button></div>';
+    if(ropen===r.id)c+='<h2 style="margin:10px 0 4px">Ingredients</h2>'+(r.ing||'').split('\n').filter(Boolean).map(t=>'<div>• '+esc(t)+'</div>').join('')+'<h2 style="margin:10px 0 4px">Steps</h2><div style="white-space:pre-wrap">'+esc(r.steps||'')+'</div><div class="row" style="margin-top:10px"><button class="pill" data-re="'+esc(r.id)+'">✏️ Edit</button><button class="pill" data-rx="'+esc(r.id)+'">🗑 Delete</button></div>';
+    return c+'</div>';
+  }).join(''):empty('No recipes yet. Tap “+ Recipe” ♡');
+  $('rc_body').innerHTML=h;
+}
+function recForm(x){
+  x=x||{};
+  ask(x.id?'Edit recipe':'New recipe',[{k:'name',p:'Recipe name',v:x.name},{k:'cat',p:'Category (optional)',v:x.cat},{k:'time',p:'Preparation time (e.g. 30 min)',v:x.time},{k:'ing',p:'Ingredients (one per line)',t:'area',v:x.ing},{k:'steps',p:'Cooking instructions',t:'area',v:x.steps}],v=>{
+    if(!v.name){toast('Please type the recipe name');return false}
+    const d={name:v.name.slice(0,80),cat:v.cat.slice(0,30),time:v.time.slice(0,30),ing:v.ing.slice(0,3000),steps:v.steps.slice(0,5000)};
+    return x.id?updateDoc(doc(col('recipes'),x.id),d):addDoc(col('recipes'),{...d,fav:false,by:me.uid,createdAt:serverTimestamp()});
+  });
+}
+$('rc_add').onclick=()=>recForm();
+$('recipes').onclick=e=>safe(async()=>{
+  const f=e.target.closest('[data-rf]'),v=e.target.closest('[data-rv]'),fv=e.target.closest('[data-rfav]'),ed=e.target.closest('[data-re]'),x=e.target.closest('[data-rx]');
+  if(f){rcf=f.dataset.rf;renderRecipes()}
+  if(v){ropen=ropen===v.dataset.rv?'':v.dataset.rv;renderRecipes()}
+  if(fv){const r=recs.find(z=>z.id===fv.dataset.rfav);if(r)await updateDoc(doc(col('recipes'),r.id),{fav:!r.fav})}
+  if(ed){const r=recs.find(z=>z.id===ed.dataset.re);if(r)recForm(r)}
+  if(x&&confirm('Delete this recipe for both of you? This cannot be undone.'))await deleteDoc(doc(col('recipes'),x.dataset.rx));
+});
+
+/* ---- Settings ---- */
+function curTheme(){try{return localStorage.getItem('theme')||'auto'}catch(e){return 'auto'}}
+function renderSettings(){
+  if(!me||!$('s_body'))return;
+  const other=Object.keys(members).find(i=>i!==me.uid),th=curTheme();
+  $('s_body').innerHTML='<h2>Account</h2><div class="card"><div class="li"><small>Signed in with Google</small><b>'+esc(me.email||'')+'</b></div><div class="li row"><div class="sp"><small>Our names</small><b>'+esc(who(me.uid))+(other?' & '+esc(who(other)):'')+'</b></div><button class="pill" data-sa="name">Change my name</button></div><div class="li"><small>Partner</small><b>'+(other?esc(who(other))+' is signed in ✓':'Has not signed in yet')+'</b></div></div>'
+  +'<h2>Our dates</h2><div class="card"><div class="li row"><div class="sp"><small>Days together since</small><b>'+(stg.startDate?nice(stg.startDate)+' '+stg.startDate.slice(0,4):'Not set')+'</b></div><button class="pill" data-sa="start">Change</button></div><div class="li row"><div class="sp"><small>Wedding date &amp; savings target</small><b>'+(stg.weddingDate?nice(stg.weddingDate)+' '+stg.weddingDate.slice(0,4):'Not set')+(stg.weddingTarget?' · '+RM(stg.weddingTarget):'')+'</b></div><button class="pill" data-go="wed">Open</button></div></div>'
+  +'<h2>Appearance</h2><div class="pills">'+[['light','Light'],['dark','Dark'],['auto','Automatic']].map(t=>'<button class="pill'+(th===t[0]?' on':'')+'" data-th="'+t[0]+'">'+t[1]+'</button>').join('')+'</div>'
+  +'<h2>Notifications</h2><div class="card mu">Push notifications, reminders and the weekly summary come with the Cloudflare step ♡</div>'
+  +'<h2>Backup</h2><div class="card"><small style="display:block;margin-bottom:8px">Download a file with all our shared data. It is private, so keep it somewhere safe.</small><button class="btn" data-sa="backup">Export backup</button></div>';
+}
+async function backup(){
+  if(!confirm('This file will contain ALL your private shared data (chat, savings, expenses and more). Keep it safe and do not share it. Continue?'))return;
+  const out={exportedAt:new Date().toISOString()};
+  for(const n of ['tasks','members','wsave','wbudget','wcheck','restock','expenses','events','bills','messages','notes','wishes','goals','gsave','recipes']){out[n]=(await getDocs(col(n))).docs.map(d=>({id:d.id,...d.data()}))}
+  out.settings=(await getDoc(doc(db,'couple','shared','settings','main'))).data()||{};
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(out,null,1)],{type:'application/json'}));a.download='our-future-backup-'+ymd(new Date())+'.json';a.click();
+}
+$('settings').onclick=e=>safe(async()=>{
+  const a=e.target.closest('[data-sa]'),t=e.target.closest('[data-th]');
+  if(t){const v=t.dataset.th;try{localStorage.setItem('theme',v)}catch(x){}if(v==='auto')document.documentElement.removeAttribute('data-theme');else document.documentElement.setAttribute('data-theme',v);renderSettings()}
+  if(!a)return;
+  if(a.dataset.sa==='name')ask('Your name',[{k:'n',p:'Name shown in the app',v:who(me.uid)}],v=>{if(!v.n)return false;return setDoc(doc(membersCol,me.uid),{nick:v.n.slice(0,20)},{merge:true})});
+  if(a.dataset.sa==='start')$('setd').click();
+  if(a.dataset.sa==='backup')await backup();
+});
 
 /* 'tikah added Chat logic 10Nov2026 */
 let mg=[],mq='',mpin=false,msel='',chatOpen=false,seenT=null;const marking=new Set();
