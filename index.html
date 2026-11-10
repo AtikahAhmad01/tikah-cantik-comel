@@ -45,8 +45,13 @@ small,.mu{font-size:13px;color:var(--mu)}
 .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px}
 #login{text-align:center;padding-top:22vh}
 #login .ic{font-size:56px}
-#sheetbg,#dbg{position:absolute;inset:0;background:rgba(40,20,35,.45);display:none;z-index:20;align-items:flex-end}
-#sheetbg.on,#dbg.on{display:flex}
+#sheetbg,#dbg,#gbg{position:absolute;inset:0;background:rgba(40,20,35,.45);display:none;z-index:20;align-items:flex-end}
+#sheetbg.on,#dbg.on,#gbg.on{display:flex}
+/* 'tikah added Wedding Savings + Restock styles 10Nov2026 */
+.bar{height:12px;border-radius:9px;background:var(--s);overflow:hidden;margin:8px 0}
+.bar i{display:block;height:100%;border-radius:9px;background:linear-gradient(90deg,var(--ac),#D8A7CF);transition:width 1s}
+.ic{width:38px;height:38px;border-radius:14px;background:var(--lav);display:grid;place-items:center;font-size:18px;flex:none}
+#g_f small{display:block;margin:8px 4px 0}
 .sheet{width:100%;max-height:92%;overflow-y:auto;background:var(--bg);border-radius:26px 26px 0 0;padding:20px 18px calc(22px + env(safe-area-inset-bottom,0px));animation:sl .35s cubic-bezier(.2,.9,.3,1.1)}
 @keyframes sl{from{transform:translateY(100%)}to{transform:none}}
 .sheet input,.sheet select,.sheet textarea{width:100%;border:0;border-radius:16px;background:var(--card);padding:12px 14px;font:16px 'DM Sans';color:var(--tx);margin:5px 0;outline:0}
@@ -100,9 +105,18 @@ small,.mu{font-size:13px;color:var(--mu)}
 <h2>Coming Up</h2><div class="card" id="h_up"></div>
 <h2>Completed This Week</h2><div class="card row" id="h_wk"></div>
 </section>
-<section class="scr" id="rest"><h1>Restock</h1><div class="card mu" style="text-align:center;margin-top:12px">Coming soon ♡</div></section>
+<!-- 'tikah Restock + Wedding Savings screens 10Nov2026 -->
+<section class="scr" id="rest"><h1>Restock</h1>
+<div class="pills" id="r_c"></div><div class="card" id="r_l"></div>
+<small>Quick add</small><div class="pills" id="r_q" style="margin-top:6px"></div>
+<button class="btn fab" id="r_add">+ Add item</button></section>
+<section class="scr" id="wed"><button class="btn ghost" data-go="more">‹ Back</button><h1 style="margin:10px 0">Wedding Savings</h1><div id="w_body"></div>
+<button class="btn fab" id="w_add">+ Add savings</button></section>
+<div id="gbg"><div class="sheet"><h2 id="g_t" style="margin-top:0"></h2><div id="g_f"></div>
+<div class="row" style="margin-top:14px"><button class="btn ghost sp" id="g_cancel">Cancel</button><button class="btn sp" id="g_save">Save</button></div></div></div>
 <section class="scr" id="cal"><h1>Calendar</h1><div class="card mu" style="text-align:center;margin-top:12px">Coming soon ♡</div></section>
-<section class="scr" id="more"><h1>More</h1><div class="card mu" style="text-align:center;margin:12px 0">More things are coming soon ♡</div><button class="btn ghost" id="bout2">Sign out</button></section>
+<section class="scr" id="more"><h1>More</h1><div class="card" style="margin-top:12px"><div class="li row" data-go="wed" style="cursor:pointer"><div class="ic">💍</div><div class="sp"><b>Wedding savings</b></div></div></div>
+<div class="card mu" style="text-align:center;margin-bottom:12px">More things are coming soon ♡</div><button class="btn ghost" id="bout2">Sign out</button></section>
 <div id="dbg"><div class="sheet"><h2 style="margin-top:0">Our special date ♡</h2><small>The day our story started. We’ll count the days together.</small>
 <input id="d_in" type="date"><div class="row" style="margin-top:10px"><button class="btn ghost sp" id="d_cancel">Cancel</button><button class="btn sp" id="d_save">Save</button></div></div></div>
 <nav class="nav" id="nav"></nav>
@@ -132,8 +146,8 @@ function esc(s){const d=document.createElement('div');d.textContent=s==null?'':S
 const TABS=['home','tasks','rest','cal','more']; /* 'tikah nav tabs 10Nov2026 */
 function show(id){
   document.querySelectorAll('.scr').forEach(s=>s.classList.toggle('on',s.id===id));
-  $('nav').style.display=TABS.includes(id)?'flex':'none';
-  document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===id));
+  $('nav').style.display=TABS.includes(id)||id==='wed'?'flex':'none';
+  document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===(id==='wed'?'more':id)));
   const e=$(id);if(e)e.scrollTop=0;
 }
 function toast(t){const e=$('toast');e.textContent=t;e.classList.add('on');setTimeout(()=>e.classList.remove('on'),2600)}
@@ -171,9 +185,94 @@ onAuthStateChanged(auth,async u=>{
   }
   unsubs.push(onSnapshot(membersCol,s=>{members={};s.forEach(d=>members[d.id]=d.data());askNick();fillWho();buildFp();render()}));
   unsubs.push(onSnapshot(tasksCol,s=>{tasks=s.docs.map(d=>({id:d.id,...d.data()}));render()},()=>toast('Could not load tasks')));
-  unsubs.push(onSnapshot(doc(db,'couple','shared','settings','main'),s=>{startDate=(s.data()||{}).startDate||'';renderHome()},()=>{}));
+  unsubs.push(onSnapshot(doc(db,'couple','shared','settings','main'),s=>{stg=s.data()||{};startDate=stg.startDate||'';renderHome();renderWed()},()=>{}));
+  /* 'tikah added Wedding Savings + Restock data 10Nov2026 */
+  unsubs.push(onSnapshot(col('wsave'),s=>{wsave=s.docs.map(d=>({id:d.id,...d.data()}));renderWed()},()=>{}));
+  unsubs.push(onSnapshot(col('wbudget'),s=>{wbud={};s.forEach(d=>wbud[d.id]=d.data());renderWed()},()=>{}));
+  unsubs.push(onSnapshot(col('wcheck'),s=>{wchk={};wcust=[];s.forEach(d=>{wchk[d.id]=d.data();if(d.data().custom)wcust.push({id:d.id,...d.data()})});renderWed()},()=>{}));
+  unsubs.push(onSnapshot(col('restock'),s=>{stock=s.docs.map(d=>({id:d.id,...d.data()}));renderStock()},()=>{}));
   show('home'); /* 'tikah Home is first screen 10Nov2026 */
 });
+
+/* 'tikah added Wedding Savings + Restock + generic form sheet 10Nov2026 */
+let stg={},wsave=[],wbud={},wchk={},wcust=[],stock=[],askCb=null,rc='all';
+const col=n=>collection(db,'couple','shared',n);
+const RM=n=>'RM '+(+n||0).toLocaleString('en-MY',{maximumFractionDigits:2});
+const slug=s=>s.toLowerCase().replace(/[^a-z0-9]+/g,'-');
+const BUD=['Hantaran','Engagement ceremony','Nikah','Wedding reception','Wedding outfits','Rings','Makeup','Photography','Venue / decorations','Food and catering','Miscellaneous'];
+const CHK=['Engagement preparation','Marriage course','Marriage application documents','Venue','Outfits','Rings','Hantaran','Photographer','Guest list','Other preparations'];
+const SCAT=['Kitchen','Household','Personal care','Groceries','Other'];
+const QUICK=['Rice','Eggs','Cooking oil','Milk','Toiletries','Cleaning products','Snacks'];
+
+function ask(title,fields,cb){
+  $('g_t').textContent=title;
+  $('g_f').innerHTML=fields.map(f=>'<small>'+esc(f.p)+'</small>'+(f.opts
+    ?'<select data-k="'+f.k+'">'+f.opts.map(o=>'<option value="'+esc(o[0])+'"'+(o[0]===f.v?' selected':'')+'>'+esc(o[1])+'</option>').join('')+'</select>'
+    :'<input data-k="'+f.k+'" type="'+(f.t||'text')+'" value="'+esc(f.v==null?'':f.v)+'"'+(f.t==='number'?' inputmode="decimal" step="0.01" min="0"':'')+'>')).join('');
+  askCb=cb;$('gbg').classList.add('on');
+}
+$('g_cancel').onclick=()=>$('gbg').classList.remove('on');
+$('gbg').onclick=e=>{if(e.target.id==='gbg')$('gbg').classList.remove('on')};
+$('g_save').onclick=async()=>{
+  const v={};document.querySelectorAll('#g_f [data-k]').forEach(e=>v[e.dataset.k]=e.value.trim());
+  try{if(await askCb(v)!==false){$('gbg').classList.remove('on');toast('Saved ♡')}}
+  catch(e){toast('Could not save. Please try again.')}
+};
+document.addEventListener('click',e=>{const g=e.target.closest('[data-go]');if(g)show(g.dataset.go)});
+
+function renderWed(){
+  if(!me||!$('w_body'))return;
+  const ids=Object.keys(members).sort((a,b)=>who(a).localeCompare(who(b)));
+  const tot=wsave.reduce((a,x)=>a+x.amount,0),tg=+stg.weddingTarget||0,pct=tg?Math.min(100,Math.round(tot/tg*100)):0;
+  const ym=ymd(new Date()).slice(0,7),mt=stg.mtarget||{},MO=2629800000;
+  let est='';
+  if(tot>0&&tg>tot){const f=wsave.map(x=>x.date).sort()[0],mo=Math.max(1,(Date.now()-new Date(f+'T00:00'))/MO);est=' · estimated '+new Date(Date.now()+(tg-tot)/(tot/mo)*MO).toLocaleDateString('en-GB',{month:'short',year:'numeric'})}
+  const wd=stg.weddingDate?Math.ceil((new Date(stg.weddingDate+'T00:00')-new Date(ymd(new Date())+'T00:00'))/864e5):null;
+  let h='<div class="card hero"><small style="color:#6d5a68">Wedding in</small><div class="big" style="cursor:default">'+(wd==null?'♡':Math.max(0,wd))+'</div><b>days</b><div><button class="btn ghost" data-a="set" style="margin-top:10px">Set date, target &amp; monthly goals</button></div></div>';
+  h+='<div class="card"><div class="row"><div class="sp"><small>Saved</small><b style="font:600 24px Fraunces,serif;display:block">'+RM(tot)+'</b></div><div style="text-align:right"><small>Target</small><div class="mu">'+(tg?RM(tg):'not set')+'</div></div></div><div class="bar"><i style="width:'+pct+'%"></i></div><small>'+pct+'%'+(tg?' · '+RM(Math.max(0,tg-tot))+' to go':'')+est+'</small></div>';
+  h+='<div class="card">'+ids.map(i=>{const s=wsave.filter(x=>x.by===i),all=s.reduce((a,x)=>a+x.amount,0),m=s.filter(x=>x.date.slice(0,7)===ym).reduce((a,x)=>a+x.amount,0),g=+mt[i]||0;return '<div class="li"><b>'+esc(who(i))+'</b><small>'+RM(all)+' saved · this month '+RM(m)+(g?' / '+RM(g)+(m>=g?' ✓':''):'')+'</small></div>'}).join('')+'</div>';
+  h+='<h2>Savings</h2><div class="card">'+(wsave.length?[...wsave].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,10).map(x=>'<div class="li row"><div class="sp"><b>'+RM(x.amount)+'</b><small>'+nice(x.date)+' · '+esc(who(x.by))+(x.note?' · '+esc(x.note):'')+'</small></div><button class="x" data-a="delsave" data-i="'+esc(x.id)+'">🗑</button></div>').join(''):'<span class="mu">No savings yet. Tap “+ Add savings” ♡</span>')+'</div>';
+  h+='<h2>Budget planner</h2><div class="card">'+BUD.map(n=>{const id=slug(n),b=wbud[id]||{},e=+b.est||0,a=+b.actual||0;return '<div class="li row"><div class="sp" data-a="bud" data-i="'+id+'" data-n="'+esc(n)+'" style="cursor:pointer"><b>'+esc(n)+'</b><small>Budget '+RM(e)+' · spent '+RM(a)+' · left '+RM(e-a)+'</small></div><button class="pill'+(b.paid?' on':'')+'" data-a="paid" data-i="'+id+'">'+(b.paid?'Paid ✓':'Unpaid')+'</button></div>'}).join('')+'</div>';
+  const items=CHK.map(n=>({id:slug(n),t:n,done:!!(wchk[slug(n)]||{}).done})).concat(wcust.map(c=>({id:c.id,t:c.title,done:!!c.done,c:1})));
+  h+='<h2>Checklist ('+items.filter(x=>x.done).length+'/'+items.length+')</h2><div class="card">'+items.map(x=>'<div class="li row'+(x.done?' done':'')+'"><button class="chk'+(x.done?' on':'')+'" data-a="chk" data-i="'+esc(x.id)+'" data-c="'+(x.c?1:'')+'">'+(x.done?'✓':'')+'</button><div class="sp"><b>'+esc(x.t)+'</b></div>'+(x.c?'<button class="x" data-a="delchk" data-i="'+esc(x.id)+'">🗑</button>':'')+'</div>').join('')+'<div style="margin-top:8px"><button class="btn ghost" data-a="addchk">+ Add item</button></div></div>';
+  $('w_body').innerHTML=h;
+}
+$('wed').onclick=async e=>{
+  const t=e.target.closest('[data-a]');if(!t)return;
+  const a=t.dataset.a,i=t.dataset.i,S=doc(db,'couple','shared','settings','main');
+  try{
+    if(a==='set'){const ids=Object.keys(members);ask('Wedding plan',[{k:'weddingDate',p:'Wedding date',t:'date',v:stg.weddingDate},{k:'weddingTarget',p:'Wedding savings target (RM)',t:'number',v:stg.weddingTarget}].concat(ids.map(u=>({k:'mt_'+u,p:'Monthly goal for '+who(u)+' (RM)',t:'number',v:(stg.mtarget||{})[u]}))),v=>{const m={};ids.forEach(u=>{if(v['mt_'+u]!=='')m[u]=+v['mt_'+u]});return setDoc(S,{weddingDate:v.weddingDate,weddingTarget:+v.weddingTarget||0,mtarget:m},{merge:true})})}
+    if(a==='paid')await setDoc(doc(col('wbudget'),i),{paid:!(wbud[i]||{}).paid},{merge:true});
+    if(a==='bud'){const b=wbud[i]||{};ask(t.dataset.n,[{k:'est',p:'Estimated budget (RM)',t:'number',v:b.est},{k:'actual',p:'Actual spending (RM)',t:'number',v:b.actual}],v=>setDoc(doc(col('wbudget'),i),{est:+v.est||0,actual:+v.actual||0},{merge:true}))}
+    if(a==='chk'){if(t.dataset.c)await updateDoc(doc(col('wcheck'),i),{done:!wcust.find(c=>c.id===i).done});else await setDoc(doc(col('wcheck'),i),{done:!(wchk[i]||{}).done},{merge:true})}
+    if(a==='delchk'&&confirm('Delete this checklist item?'))await deleteDoc(doc(col('wcheck'),i));
+    if(a==='addchk')ask('New checklist item',[{k:'title',p:'What needs doing?'}],v=>{if(!v.title){toast('Please type a title');return false}return addDoc(col('wcheck'),{title:v.title.slice(0,80),done:false,custom:true})});
+    if(a==='delsave'&&confirm('Delete this savings entry for both of you? This cannot be undone.'))await deleteDoc(doc(col('wsave'),i));
+  }catch(err){toast('Something went wrong. Please try again.')}
+};
+$('w_add').onclick=()=>ask('Add savings',[{k:'amount',p:'Amount (RM)',t:'number'},{k:'date',p:'Date',t:'date',v:ymd(new Date())},{k:'by',p:'Who saved',opts:Object.keys(members).map(u=>[u,who(u)]),v:me.uid},{k:'note',p:'Note (optional)'}],v=>{const n=+v.amount;if(!(n>0)||!v.date){toast('Please enter an amount and date');return false}return addDoc(col('wsave'),{amount:n,date:v.date,by:v.by||me.uid,note:v.note.slice(0,80),createdBy:me.uid,createdAt:serverTimestamp()})});
+
+function renderStock(){
+  if(!me)return;
+  $('r_c').innerHTML=['All'].concat(SCAT).map(c=>'<button class="pill'+((rc==='all'?'All':rc)===c?' on':'')+'" data-c="'+esc(c)+'">'+esc(c)+'</button>').join('');
+  const l=stock.filter(x=>rc==='all'||x.cat===rc).sort((a,b)=>(a.bought?1:0)-(b.bought?1:0)||a.name.localeCompare(b.name));
+  $('r_l').innerHTML=l.length?l.map(x=>{
+    let lk='';
+    if(/^https?:\/\//i.test(x.link||'')){try{lk=' · <a href="'+esc(x.link)+'" target="_blank" rel="noopener noreferrer" style="color:var(--rose)">'+esc(new URL(x.link).hostname.replace(/^www\./,''))+'</a>'}catch(e){}}
+    return '<div class="li row'+(x.bought?' done':'')+'"><button class="chk'+(x.bought?' on':'')+'" data-t="'+esc(x.id)+'">'+(x.bought?'✓':'')+'</button><div class="sp"><b>'+esc(x.name)+(x.qty?' ×'+esc(x.qty):'')+'</b><small>Added by '+esc(who(x.by))+lk+'</small>'+(x.note?'<small style="display:block">'+esc(x.note)+'</small>':'')+'</div><button class="x" data-d="'+esc(x.id)+'">🗑</button></div>';
+  }).join(''):'<span class="mu">Nothing to restock ♡</span>';
+  $('r_q').innerHTML=QUICK.map(q=>'<button class="pill" data-q="'+esc(q)+'">'+esc(q)+'</button>').join('');
+}
+$('rest').onclick=async e=>{
+  const c=e.target.closest('[data-c]'),t=e.target.closest('[data-t]'),d=e.target.closest('[data-d]'),q=e.target.closest('[data-q]');
+  try{
+    if(c){rc=c.dataset.c==='All'?'all':c.dataset.c;renderStock()}
+    if(t){const x=stock.find(y=>y.id===t.dataset.t);if(x)await updateDoc(doc(col('restock'),x.id),{bought:!x.bought})}
+    if(d&&confirm('Remove this item for both of you?'))await deleteDoc(doc(col('restock'),d.dataset.d));
+    if(q){await addDoc(col('restock'),{name:q.dataset.q,qty:'',note:'',link:'',cat:rc==='all'?'Groceries':rc,bought:false,by:me.uid,createdAt:serverTimestamp()});toast('Added ♡')}
+  }catch(err){toast('Something went wrong. Please try again.')}
+};
+$('r_add').onclick=()=>ask('Add item',[{k:'name',p:'Item name'},{k:'qty',p:'Quantity (optional)'},{k:'cat',p:'Category',opts:SCAT.map(c=>[c,c]),v:rc==='all'?'Groceries':rc},{k:'note',p:'Note (optional)'},{k:'link',p:'Shopping link (optional)',t:'url'}],v=>{if(!v.name){toast('Please type the item name');return false}if(v.link&&!/^https?:\/\//i.test(v.link)){toast('Link must start with http:// or https://');return false}return addDoc(col('restock'),{name:v.name.slice(0,60),qty:v.qty.slice(0,20),cat:v.cat,note:v.note.slice(0,120),link:v.link,bought:false,by:me.uid,createdAt:serverTimestamp()})});
 
 /* 'tikah added Home screen logic + nav 10Nov2026 */
 let startDate='';
