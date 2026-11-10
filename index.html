@@ -19,7 +19,7 @@
 html,body{height:100%}
 body{font:400 16px/1.4 'DM Sans',system-ui,sans-serif;color:var(--tx);background:var(--bg);display:flex;justify-content:center}
 #wrap{width:100%;max-width:430px;height:100%;position:relative;overflow:hidden;background:linear-gradient(180deg,var(--g),var(--bg) 280px)}
-.scr{display:none;height:100%;overflow-y:auto;padding:calc(env(safe-area-inset-top,0px) + 18px) 16px 120px}
+.scr{display:none;height:100%;overflow-y:auto;padding:calc(env(safe-area-inset-top,0px) + 18px) 16px 170px} /* 'tikah room for nav 10Nov2026 */
 .scr.on{display:block}
 h1{font:600 32px 'Fraunces',Georgia,serif}
 h2{font:600 19px 'Fraunces',Georgia,serif;margin:16px 2px 8px}
@@ -37,7 +37,7 @@ small,.mu{font-size:13px;color:var(--mu)}
 .chk.rec{border-style:dashed}.chk.on{background:var(--ac)}
 .done .sp b{text-decoration:line-through;color:var(--mu)}
 .x{border:0;background:none;color:var(--mu);font-size:18px;cursor:pointer;padding:4px}
-.fab{position:absolute;right:16px;bottom:calc(24px + env(safe-area-inset-bottom,0px));z-index:5;animation:glow 2.6s ease-in-out infinite}
+.fab{position:absolute;right:16px;bottom:calc(98px + env(safe-area-inset-bottom,0px));z-index:5;animation:glow 2.6s ease-in-out infinite}
 @keyframes glow{0%,100%{box-shadow:0 4px 14px rgba(184,92,131,.3)}50%{box-shadow:0 4px 24px rgba(232,142,175,.75)}}
 @keyframes up{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 @keyframes pop{0%{transform:scale(.6)}60%{transform:scale(1.25)}100%{transform:scale(1)}}
@@ -45,13 +45,22 @@ small,.mu{font-size:13px;color:var(--mu)}
 .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px}
 #login{text-align:center;padding-top:22vh}
 #login .ic{font-size:56px}
-#sheetbg{position:absolute;inset:0;background:rgba(40,20,35,.45);display:none;z-index:20;align-items:flex-end}
-#sheetbg.on{display:flex}
+#sheetbg,#dbg{position:absolute;inset:0;background:rgba(40,20,35,.45);display:none;z-index:20;align-items:flex-end}
+#sheetbg.on,#dbg.on{display:flex}
 .sheet{width:100%;max-height:92%;overflow-y:auto;background:var(--bg);border-radius:26px 26px 0 0;padding:20px 18px calc(22px + env(safe-area-inset-bottom,0px));animation:sl .35s cubic-bezier(.2,.9,.3,1.1)}
 @keyframes sl{from{transform:translateY(100%)}to{transform:none}}
 .sheet input,.sheet select,.sheet textarea{width:100%;border:0;border-radius:16px;background:var(--card);padding:12px 14px;font:16px 'DM Sans';color:var(--tx);margin:5px 0;outline:0}
 #toast{position:absolute;left:50%;top:60px;transform:translateX(-50%);background:var(--rose);color:#fff;padding:9px 18px;border-radius:99px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .3s;z-index:30;max-width:90%;text-align:center}
 #toast.on{opacity:1}
+/* 'tikah added Home + bottom nav styles 10Nov2026 */
+.hero{background:linear-gradient(135deg,#F9C6DA,#D9C6F5);color:#382A35;text-align:center;padding:22px 16px}
+.av{width:46px;height:46px;border-radius:50%;border:3px solid #fff;display:grid;place-items:center;font-weight:700;color:#fff;background:var(--ac);overflow:hidden}
+.av.b{background:#D8A7CF;margin-left:-12px}.av img{width:100%;height:100%;object-fit:cover}
+.big{font:600 56px/1 'Fraunces',Georgia,serif;margin:8px 0 2px;cursor:pointer}
+.nav{position:absolute;left:14px;right:14px;bottom:calc(14px + env(safe-area-inset-bottom,0px));height:68px;border-radius:30px;background:var(--card);backdrop-filter:blur(14px);box-shadow:0 8px 28px rgba(184,92,131,.2);display:none;padding:6px;z-index:6}
+.nav button{flex:1;border:0;background:none;border-radius:24px;color:var(--mu);font:500 11px 'DM Sans';display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer}
+.nav button.on{background:var(--g);color:var(--rose)}
+.nav svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style></head><body><div id="wrap">
 
@@ -81,6 +90,22 @@ small,.mu{font-size:13px;color:var(--mu)}
 <select id="t_rep"><option value="none">No repeat</option><option value="daily">Repeat daily</option><option value="weekly">Repeat weekly</option><option value="monthly">Repeat monthly</option></select>
 <input id="t_amt" type="number" inputmode="decimal" min="0" step="0.01" placeholder="Amount (optional, for bills)">
 <div class="row" style="margin-top:10px"><button class="btn ghost sp" id="t_cancel">Cancel</button><button class="btn sp" id="t_save">Save</button></div></div></div>
+<!-- 'tikah added Home, placeholders, date sheet, nav 10Nov2026 -->
+<section class="scr" id="home">
+<div class="card hero"><div class="row" id="av" style="justify-content:center"></div>
+<div class="big" id="days">♡</div><div style="font-weight:700">Days Together</div>
+<small style="color:#6d5a68">Another day, another memory together ♡</small>
+<div><button class="btn ghost" id="setd" style="margin-top:10px">Set our special date</button></div></div>
+<h2>Today</h2><div class="card" id="h_today"></div>
+<h2>Coming Up</h2><div class="card" id="h_up"></div>
+<h2>Completed This Week</h2><div class="card row" id="h_wk"></div>
+</section>
+<section class="scr" id="rest"><h1>Restock</h1><div class="card mu" style="text-align:center;margin-top:12px">Coming soon ♡</div></section>
+<section class="scr" id="cal"><h1>Calendar</h1><div class="card mu" style="text-align:center;margin-top:12px">Coming soon ♡</div></section>
+<section class="scr" id="more"><h1>More</h1><div class="card mu" style="text-align:center;margin:12px 0">More things are coming soon ♡</div><button class="btn ghost" id="bout2">Sign out</button></section>
+<div id="dbg"><div class="sheet"><h2 style="margin-top:0">Our special date ♡</h2><small>The day our story started. We’ll count the days together.</small>
+<input id="d_in" type="date"><div class="row" style="margin-top:10px"><button class="btn ghost sp" id="d_cancel">Cancel</button><button class="btn sp" id="d_save">Save</button></div></div></div>
+<nav class="nav" id="nav"></nav>
 <div id="toast"></div>
 </div>
 
@@ -104,7 +129,13 @@ const membersCol=collection(db,'couple','shared','members');
 let me=null,members={},tasks=[],fp='all',fs='open',unsubs=[];
 
 function esc(s){const d=document.createElement('div');d.textContent=s==null?'':String(s);return d.innerHTML}
-function show(id){document.querySelectorAll('.scr').forEach(s=>s.classList.toggle('on',s.id===id))}
+const TABS=['home','tasks','rest','cal','more']; /* 'tikah nav tabs 10Nov2026 */
+function show(id){
+  document.querySelectorAll('.scr').forEach(s=>s.classList.toggle('on',s.id===id));
+  $('nav').style.display=TABS.includes(id)?'flex':'none';
+  document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===id));
+  const e=$(id);if(e)e.scrollTop=0;
+}
 function toast(t){const e=$('toast');e.textContent=t;e.classList.add('on');setTimeout(()=>e.classList.remove('on'),2600)}
 function ymd(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
 function nice(s){return new Date(s+'T00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short'})}
@@ -140,9 +171,40 @@ onAuthStateChanged(auth,async u=>{
   }
   unsubs.push(onSnapshot(membersCol,s=>{members={};s.forEach(d=>members[d.id]=d.data());askNick();fillWho();buildFp();render()}));
   unsubs.push(onSnapshot(tasksCol,s=>{tasks=s.docs.map(d=>({id:d.id,...d.data()}));render()},()=>toast('Could not load tasks')));
-  show('tasks');
+  unsubs.push(onSnapshot(doc(db,'couple','shared','settings','main'),s=>{startDate=(s.data()||{}).startDate||'';renderHome()},()=>{}));
+  show('home'); /* 'tikah Home is first screen 10Nov2026 */
 });
 
+/* 'tikah added Home screen logic + nav 10Nov2026 */
+let startDate='';
+$('nav').innerHTML=[['home','Home','<path d="M4 11l8-7 8 7v9H4z"/>'],['tasks','Tasks','<circle cx="12" cy="12" r="8"/><path d="M8.5 12l2.5 2.5 4.5-5"/>'],['rest','Restock','<path d="M5 7h14l-1.5 12h-11z"/><path d="M9 7a3 3 0 016 0"/>'],['cal','Calendar','<rect x="4" y="5" width="16" height="15" rx="3"/><path d="M4 10h16M9 3v4M15 3v4"/>'],['more','More','<circle cx="6" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="18" cy="12" r="1"/>']].map(t=>'<button data-t="'+t[0]+'"><svg viewBox="0 0 24 24">'+t[2]+'</svg>'+t[1]+'</button>').join('');
+$('nav').onclick=e=>{const b=e.target.closest('button');if(b)show(b.dataset.t)};
+$('bout2').onclick=()=>signOut(auth);
+function homeItem(t,today){
+  return '<div class="li"><b>'+esc(t.title)+'</b><small>'+(t.due&&t.due<today?'Overdue · ':'')+(t.due?nice(t.due)+' · ':'')+esc(who(t.assignee))+'</small></div>';
+}
+function renderHome(){
+  if(!me)return;
+  const today=ymd(new Date());
+  $('days').textContent=startDate?Math.max(0,Math.round((new Date(today+'T00:00')-new Date(startDate+'T00:00'))/864e5)):'♡';
+  $('setd').style.display=startDate?'none':'inline-block';
+  const ids=Object.keys(members).sort((a,b)=>who(a).localeCompare(who(b)));
+  $('av').innerHTML=ids.map((i,k)=>{const p=members[i].photo;return '<div class="av'+(k?' b':'')+'">'+(p&&/^https:\/\//.test(p)?'<img src="'+esc(p)+'" alt="" referrerpolicy="no-referrer">':esc((who(i)[0]||'?').toUpperCase()))+'</div>'}).join('');
+  const open=tasks.filter(t=>!t.done).sort((a,b)=>(a.due||'9999').localeCompare(b.due||'9999'));
+  const td=open.filter(t=>t.due&&t.due<=today),up=open.filter(t=>t.due&&t.due>today);
+  $('h_today').innerHTML=td.length?td.slice(0,5).map(t=>homeItem(t,today)).join('')+(td.length>5?'<small>+'+(td.length-5)+' more</small>':''):'<span class="mu">Nothing due today ♡</span>';
+  $('h_up').innerHTML=up.length?up.slice(0,4).map(t=>homeItem(t,today)).join('')+(up.length>4?'<small>+'+(up.length-4)+' more</small>':''):'<span class="mu">Nothing coming up yet</span>';
+  const w=new Date();w.setHours(0,0,0,0);w.setDate(w.getDate()-((w.getDay()+6)%7));
+  $('h_wk').innerHTML=ids.length?ids.map(i=>'<div class="sp"><b>'+esc(who(i))+'</b><br><small>'+tasks.filter(t=>t.done&&t.doneBy===i&&t.doneAt>=w.getTime()).length+' tasks done ✓</small></div>').join(''):'<span class="mu">No one yet</span>';
+}
+$('setd').onclick=$('days').onclick=()=>{$('d_in').value=startDate||'';$('dbg').classList.add('on')};
+$('d_cancel').onclick=()=>$('dbg').classList.remove('on');
+$('dbg').onclick=e=>{if(e.target.id==='dbg')$('dbg').classList.remove('on')};
+$('d_save').onclick=async()=>{
+  const v=$('d_in').value;if(!v){toast('Please pick a date');return}
+  try{await setDoc(doc(db,'couple','shared','settings','main'),{startDate:v},{merge:true});$('dbg').classList.remove('on');toast('Saved ♡')}
+  catch(e){toast('Could not save. Please try again.')}
+};
 function fillWho(){
   const ids=Object.keys(members);
   $('t_who').innerHTML=ids.map(i=>'<option value="'+esc(i)+'">Assigned to '+esc(who(i))+'</option>').join('');
@@ -155,7 +217,7 @@ document.querySelectorAll('#fs .pill').forEach(b=>b.onclick=()=>{fs=b.dataset.s;
 function sel(id,b){document.querySelectorAll('#'+id+' .pill').forEach(x=>x.classList.toggle('on',x===b))}
 
 function render(){
-  if(!me)return;
+  if(!me)return;renderHome();
   const today=ymd(new Date());
   let l=tasks.filter(t=>fp==='all'||t.assignee===fp);
   if(fs==='open')l=l.filter(t=>!t.done);if(fs==='done')l=l.filter(t=>t.done);
