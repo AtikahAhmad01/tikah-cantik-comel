@@ -153,8 +153,8 @@ small,.mu{font-size:13px;color:var(--mu)}
 <div class="card row" data-go="chat" style="cursor:pointer"><div class="ic">💬</div><div class="sp"><small id="h_cn">Chat</small><b id="h_cm" style="display:block;font-weight:500">Say hi ♡</b></div><small id="h_ct"></small></div>
 <div class="row" style="margin:16px 2px 0"><h2 class="sp" style="margin:0">Photos</h2><button class="pill" data-go="memories">See all ›</button></div><div class="strip" id="h_ph"></div>
 <!-- 'tikah added Where we are on Home 11Nov2026 -->
-<div class="row" style="margin:6px 2px 8px"><h2 class="sp" style="margin:0">Location Now</h2><button class="pill" data-go="where">Details ›</button></div><div class="g2" id="h_wh"></div>
-<small style="display:block;margin:6px 4px 10px">Map © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer" style="color:var(--rose)">OpenStreetMap</a> contributors</small>
+<div class="row" style="margin:6px 2px 8px"><h2 class="sp" style="margin:0">Location Now</h2><button class="pill" data-go="where">Details ›</button></div><div class="g2" id="h_wh" style="margin-bottom:10px"></div>
+<!-- 'tikah removed Home map credit line 11Nov2026 -->
 <h2>Today</h2><div class="card" id="h_today"></div>
 <h2>Coming Up</h2><div class="card" id="h_up"></div>
 <h2>Completed This Week</h2><div class="card row" id="h_wk"></div>
@@ -546,7 +546,7 @@ function renderSettings(){
   +'<h2>Our dates</h2><div class="card"><div class="li row"><div class="sp"><small>Days together since</small><b>'+(stg.startDate?nice(stg.startDate)+' '+stg.startDate.slice(0,4):'Not set')+'</b></div><button class="pill" data-sa="start">Change</button></div><div class="li row"><div class="sp"><small>Wedding date &amp; savings target</small><b>'+(stg.weddingDate?nice(stg.weddingDate)+' '+stg.weddingDate.slice(0,4):'Not set')+(stg.weddingTarget?' · '+RM(stg.weddingTarget):'')+'</b></div><button class="pill" data-go="wed">Open</button></div></div>'
   +'<h2>Appearance</h2><div class="pills">'+[['light','Light'],['dark','Dark'],['auto','Automatic']].map(t=>'<button class="pill'+(th===t[0]?' on':'')+'" data-th="'+t[0]+'">'+t[1]+'</button>').join('')+'</div>'
   +'<h2>Notifications</h2><div class="card mu">Push notifications, reminders and the weekly summary come with the Cloudflare step ♡</div>'
-  +'<h2>Backup</h2><div class="card"><small style="display:block;margin-bottom:8px">Download a file with all our shared data. It is private, so keep it somewhere safe.</small><button class="btn" data-sa="backup">Export backup</button></div>';
+  +'<h2>Backup</h2><div class="card"><small style="display:block;margin-bottom:8px">Download a file with all our shared data. It is private, so keep it somewhere safe.</small><button class="btn" data-sa="backup">Export backup</button></div><small style="display:block;margin:14px 4px">Maps © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer" style="color:var(--rose)">OpenStreetMap</a> contributors</small>';
 }
 async function backup(){
   if(!confirm('This file will contain ALL your private shared data (chat, savings, expenses and more). Keep it safe and do not share it. Continue?'))return;
@@ -710,6 +710,17 @@ function startShare(){
   },err=>toast(err.code===1?'Location is blocked. Please allow it in your phone settings.':'Could not get your location right now'),{enableHighAccuracy:false,maximumAge:30000,timeout:20000});
 }
 function stopShare(){if(watchId!=null&&navigator.geolocation)navigator.geolocation.clearWatch(watchId);watchId=null;lastPos=null}
+const nameCache={};
+async function geocode(la,lo){
+  const k=la.toFixed(3)+','+lo.toFixed(3);if(k in nameCache)return nameCache[k];
+  try{
+    const r=await fetch('https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=16&addressdetails=1&accept-language=en&lat='+la+'&lon='+lo);
+    const j=await r.json(),a=j.address||{};
+    nameCache[k]=[a.road||a.neighbourhood||a.hamlet||a.village,a.suburb||a.city_district||a.town||a.city||a.county].filter((x,i,ar)=>x&&ar.indexOf(x)===i).join(', ')||(j.display_name||'').split(',').slice(0,2).join(',').trim();
+  }catch(e){nameCache[k]=''}
+  return nameCache[k];
+}
+function fillNames(root){root.querySelectorAll('.pn').forEach(async x=>{if(x.textContent)return;const n=await geocode(+x.dataset.la,+x.dataset.lo);if(n&&!x.textContent)x.textContent='📍 '+n})}
 let mapsW=[],mapsH=[],wSig='';
 function drawMap(el,la,lo,big,arr){
   if(!window.L){el.textContent='Map could not load';return}
@@ -729,7 +740,7 @@ function renderWhere(){
     wSig=sig;mapsW.forEach(m=>m.remove());mapsW=[];
     let h='<div class="card"><div class="row"><div class="sp"><b>Share my location</b><small style="display:block">'+(on?'On. '+esc(nm)+' can see where you are while the app is open.':'Off. Nobody can see where you are.')+'</small></div><button class="pill'+(on?' on':'')+'" data-wh="toggle">'+(on?'Sharing ✓':'Turn on')+'</button></div></div>';
     if(L2){
-      h+='<div class="card"><b style="display:block">'+esc(nm)+'</b>'+(om.loc.name?'<small style="display:block">📍 '+esc(om.loc.name)+'</small>':'')+'<small style="display:block" data-ago="'+L2.t+'"></small><div class="map big" data-la="'+L2.la+'" data-lo="'+L2.lo+'"></div><div style="margin-top:10px"><a class="btn ghost" style="text-decoration:none;display:inline-block" href="https://www.google.com/maps?q='+L2.la.toFixed(5)+','+L2.lo.toFixed(5)+'" target="_blank" rel="noopener noreferrer">Open in Maps</a></div></div>';
+      h+='<div class="card"><b style="display:block">'+esc(nm)+'</b>'+'<div class="map big" data-la="'+L2.la+'" data-lo="'+L2.lo+'"></div><small class="pn" style="display:block;margin-top:8px" data-la="'+L2.la+'" data-lo="'+L2.lo+'">'+(om.loc.name?'📍 '+esc(om.loc.name):'')+'</small><small style="display:block" data-ago="'+L2.t+'"></small><div style="margin-top:10px"><a class="btn ghost" style="text-decoration:none;display:inline-block" href="https://www.google.com/maps?q='+L2.la.toFixed(5)+','+L2.lo.toFixed(5)+'" target="_blank" rel="noopener noreferrer">Open in Maps</a></div></div>';
     }else if(om&&om.locOn)h+='<div class="card mu">Waiting for '+esc(nm)+'’s location. Their app needs to be open.</div>';
     else if(other)h+='<div class="card mu">'+esc(nm)+' is not sharing their location right now.</div>';
     else h+='<div class="card mu">Your partner has not signed in yet.</div>';
@@ -737,6 +748,7 @@ function renderWhere(){
     $('wh_body').innerHTML=h;
     $('wh_body').querySelectorAll('.map').forEach(el=>drawMap(el,+el.dataset.la,+el.dataset.lo,true,mapsW));
   }
+  fillNames($('wh_body'));
   $('wh_body').querySelectorAll('[data-ago]').forEach(x=>x.textContent='Updated '+agoT(+x.dataset.ago));
 }
 $('where').onclick=e=>safe(async()=>{
@@ -765,11 +777,12 @@ function renderHomeWhere(){
     el.innerHTML=ids.map(i=>{
       const m=members[i],L2=locOf(m);
       return '<div class="card" data-go="where" style="margin:0;padding:10px;cursor:pointer"><b style="display:block">'+esc(who(i))+(i===me.uid?' (me)':'')+'</b>'
-        +(L2?(m.loc.name?'<small style="display:block">📍 '+esc(m.loc.name)+'</small>':'')+'<small style="display:block" data-ago="'+L2.t+'"></small><div class="map" data-la="'+L2.la+'" data-lo="'+L2.lo+'"></div>'
+        +(L2?'<div class="map" data-la="'+L2.la+'" data-lo="'+L2.lo+'"></div><small class="pn" style="display:block;margin-top:6px" data-la="'+L2.la+'" data-lo="'+L2.lo+'">'+(m.loc.name?'📍 '+esc(m.loc.name):'')+'</small><small style="display:block" data-ago="'+L2.t+'"></small>'
           :'<small style="display:block;margin-top:4px">'+(m.locOn?'Waiting for location…':'Not sharing')+'</small>'+(i===me.uid&&!m.locOn?'<button class="pill" style="margin-top:8px" data-go="where">Turn on</button>':''))+'</div>';
     }).join('');
     el.querySelectorAll('.map').forEach(x=>drawMap(x,+x.dataset.la,+x.dataset.lo,false,mapsH));
   }
+  fillNames(el);
   el.querySelectorAll('[data-ago]').forEach(x=>x.textContent='Updated '+agoT(+x.dataset.ago));
 }
 
