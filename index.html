@@ -3,6 +3,9 @@
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Our Future</title>
+<!-- 'tikah added clean maps (Leaflet 1.9.4) 11Nov2026 -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
 <!-- 'tikah added PWA tags 10Nov2026 -->
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#E88EAF">
@@ -86,6 +89,8 @@ small,.mu{font-size:13px;color:var(--mu)}
 .sp>b{display:block}
 .sp>small{display:block;margin-top:3px}
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.map{width:100%;height:140px;border-radius:12px;margin-top:6px;overflow:hidden;background:var(--s);position:relative;z-index:0}
+.map.big{height:280px;border-radius:16px;margin-top:10px}
 /* 'tikah added Calendar styles 10Nov2026 */
 .cal{display:grid;grid-template-columns:repeat(7,1fr);text-align:center;gap:4px 0}
 .cal span{padding:8px 0;font-size:14px;border-radius:50%;position:relative;cursor:pointer}
@@ -148,7 +153,8 @@ small,.mu{font-size:13px;color:var(--mu)}
 <div class="card row" data-go="chat" style="cursor:pointer"><div class="ic">💬</div><div class="sp"><small id="h_cn">Chat</small><b id="h_cm" style="display:block;font-weight:500">Say hi ♡</b></div><small id="h_ct"></small></div>
 <div class="row" style="margin:16px 2px 0"><h2 class="sp" style="margin:0">Photos</h2><button class="pill" data-go="memories">See all ›</button></div><div class="strip" id="h_ph"></div>
 <!-- 'tikah added Where we are on Home 11Nov2026 -->
-<div class="row" style="margin:6px 2px 8px"><h2 class="sp" style="margin:0">Where we are</h2><button class="pill" data-go="where">Details ›</button></div><div class="g2" id="h_wh" style="margin-bottom:10px"></div>
+<div class="row" style="margin:6px 2px 8px"><h2 class="sp" style="margin:0">Location Now</h2><button class="pill" data-go="where">Details ›</button></div><div class="g2" id="h_wh"></div>
+<small style="display:block;margin:6px 4px 10px">Map © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer" style="color:var(--rose)">OpenStreetMap</a> contributors</small>
 <h2>Today</h2><div class="card" id="h_today"></div>
 <h2>Coming Up</h2><div class="card" id="h_up"></div>
 <h2>Completed This Week</h2><div class="card row" id="h_wk"></div>
@@ -176,7 +182,7 @@ small,.mu{font-size:13px;color:var(--mu)}
 <section class="scr" id="memories"><button class="btn ghost" data-go="more">‹ Back</button><h1 style="margin:10px 0">Memories</h1><div id="me_body"></div><button class="btn fab" id="me_add">+ Memory</button></section>
 <div id="vbg"><img id="v_img" alt=""><div id="v_cap" style="font:600 20px Fraunces,Georgia,serif"></div><small id="v_sub" style="color:#ddd"></small><div class="row" style="margin-top:8px"><button class="btn ghost" id="v_edit">✏️ Edit</button><button class="btn ghost" id="v_del">🗑 Delete</button><button class="btn" id="v_close">Close</button></div></div>
 <!-- 'tikah added Location sharing screen 10Nov2026 -->
-<section class="scr" id="where"><button class="btn ghost" data-go="more">‹ Back</button><h1 style="margin:10px 0">Where are we</h1><div id="wh_body"></div></section>
+<section class="scr" id="where"><button class="btn ghost" data-go="more">‹ Back</button><h1 style="margin:10px 0">Location Now</h1><div id="wh_body"></div></section>
 <!-- 'tikah added Chat screen 10Nov2026 -->
 <section class="scr" id="chat">
 <div class="ch-h"><button class="x" data-go="home" aria-label="Back">‹</button><div class="sp"><b id="ch_n">Chat</b><br><small id="ch_s"></small></div><button class="x" id="ch_f" aria-label="Search" style="font-size:18px">🔍</button></div>
@@ -233,7 +239,8 @@ function show(id){
   $('nav').style.display=TABS.includes(id)||sub?'flex':'none';
   document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===(sub?'more':id)));
   const e=$(id);if(e)e.scrollTop=0;
-  chatOpen=id==='chat';if(chatOpen)openChat(); /* 'tikah chat open/close 10Nov2026 */
+  chatOpen=id==='chat';if(chatOpen)openChat();
+  setTimeout(()=>[...mapsH,...mapsW].forEach(m=>m.invalidateSize()),60); /* 'tikah maps resize 11Nov2026 */ /* 'tikah chat open/close 10Nov2026 */
 }
 function toast(t){const e=$('toast');e.textContent=t;e.classList.add('on');setTimeout(()=>e.classList.remove('on'),2600)}
 function ymd(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
@@ -680,34 +687,57 @@ $('v_del').onclick=()=>safe(async()=>{if(confirm('Delete this memory for both of
 /* 'tikah added Location sharing 10Nov2026 */
 let watchId=null,lastW=0,lastPos=null;
 const dist=(a,b)=>{const R=6371000,r=x=>x*Math.PI/180,dl=r(b.latitude-a.latitude),dg=r(b.longitude-a.longitude),h=Math.sin(dl/2)**2+Math.cos(r(a.latitude))*Math.cos(r(b.latitude))*Math.sin(dg/2)**2;return 2*R*Math.asin(Math.sqrt(h))};
+let geoPos=null,geoName='';
+async function placeName(c){
+  if(geoPos&&geoName&&dist(geoPos,c)<300)return geoName;
+  try{
+    const r=await fetch('https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=16&addressdetails=1&accept-language=en&lat='+c.latitude+'&lon='+c.longitude);
+    const j=await r.json(),a=j.address||{};
+    const nm=[a.road||a.neighbourhood||a.hamlet||a.village,a.suburb||a.city_district||a.town||a.city||a.county].filter((x,i,ar)=>x&&ar.indexOf(x)===i).join(', ')||(j.display_name||'').split(',').slice(0,2).join(',').trim();
+    geoPos={latitude:c.latitude,longitude:c.longitude};geoName=nm;return nm;
+  }catch(e){return geoName||''}
+}
 function startShare(){
   if(!navigator.geolocation){toast('This phone or browser cannot share location');return}
   stopShare();
-  watchId=navigator.geolocation.watchPosition(p=>{
+  watchId=navigator.geolocation.watchPosition(async p=>{
+    if(!me)return;
     const n=Date.now(),c=p.coords;
     if(lastPos&&n-lastW<60000&&dist(lastPos,c)<50)return;
     lastW=n;lastPos={latitude:c.latitude,longitude:c.longitude};
-    setDoc(doc(membersCol,me.uid),{loc:{lat:c.latitude,lng:c.longitude,acc:Math.round(c.accuracy||0),t:n}},{merge:true}).catch(()=>{});
+    const name=await placeName(c);
+    setDoc(doc(membersCol,me.uid),{loc:{lat:c.latitude,lng:c.longitude,acc:Math.round(c.accuracy||0),t:n,name:(name||'').slice(0,80)}},{merge:true}).catch(()=>{});
   },err=>toast(err.code===1?'Location is blocked. Please allow it in your phone settings.':'Could not get your location right now'),{enableHighAccuracy:false,maximumAge:30000,timeout:20000});
 }
 function stopShare(){if(watchId!=null&&navigator.geolocation)navigator.geolocation.clearWatch(watchId);watchId=null;lastPos=null}
+let mapsW=[],mapsH=[],wSig='';
+function drawMap(el,la,lo,big,arr){
+  if(!window.L){el.textContent='Map could not load';return}
+  const m=L.map(el,{zoomControl:false,attributionControl:false,dragging:!!big,touchZoom:!!big,doubleClickZoom:!!big,scrollWheelZoom:false,boxZoom:false,keyboard:false}).setView([la,lo],big?16:15);
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(m);
+  L.circleMarker([la,lo],{radius:9,color:'#fff',weight:3,fillColor:'#B85C83',fillOpacity:1}).addTo(m);
+  arr.push(m);
+}
 function renderWhere(){
   if(!me||!$('wh_body'))return;
   const other=Object.keys(members).find(i=>i!==me.uid),om=other?members[other]:null,mine=members[me.uid]||{};
   if(mine.locOn&&watchId==null)startShare();
   if(!mine.locOn&&watchId!=null)stopShare();
-  const on=!!mine.locOn,nm=other?who(other):'Your partner';
-  let h='<div class="card"><div class="row"><div class="sp"><b>Share my location</b><small style="display:block">'+(on?'On. '+esc(nm)+' can see where you are while the app is open.':'Off. Nobody can see where you are.')+'</small></div><button class="pill'+(on?' on':'')+'" data-wh="toggle">'+(on?'Sharing ✓':'Turn on')+'</button></div></div>';
-  const l=om&&om.locOn&&om.loc,la=l&&Number(l.lat),lo=l&&Number(l.lng);
-  if(l&&isFinite(la)&&isFinite(lo)&&Math.abs(la)<=90&&Math.abs(lo)<=180){
-    const mins=Math.max(0,Math.round((Date.now()-l.t)/60000)),ago=mins<1?'just now':mins<60?mins+' min ago':Math.round(mins/60)+' h ago';
-    const bb=[lo-.004,la-.003,lo+.004,la+.003].map(v=>v.toFixed(5)).join('%2C');
-    h+='<div class="card"><b>'+esc(who(other))+'</b><small style="display:block">Updated '+ago+(mins>30?' · this may be out of date, the app has to be open to update':'')+'</small><iframe title="Map" src="https://www.openstreetmap.org/export/embed.html?bbox='+bb+'&layer=mapnik&marker='+la.toFixed(5)+'%2C'+lo.toFixed(5)+'" style="width:100%;height:280px;border:0;border-radius:16px;margin-top:10px" loading="lazy"></iframe><div style="margin-top:10px"><a class="btn ghost" style="text-decoration:none;display:inline-block" href="https://www.google.com/maps?q='+la.toFixed(5)+','+lo.toFixed(5)+'" target="_blank" rel="noopener noreferrer">Open in Maps</a></div></div>';
-  }else if(om&&om.locOn)h+='<div class="card mu">Waiting for '+esc(nm)+'’s location. Their app needs to be open.</div>';
-  else if(other)h+='<div class="card mu">'+esc(nm)+' is not sharing their location right now.</div>';
-  else h+='<div class="card mu">Your partner has not signed in yet.</div>';
-  h+='<small style="display:block;margin:6px 4px">Location only updates while the app is open. It is shared only between the two of us, and each of us can turn our own sharing off at any time.</small>';
-  $('wh_body').innerHTML=h;
+  const on=!!mine.locOn,nm=other?who(other):'Your partner',L2=locOf(om);
+  const sig=[on,nm,other&&om&&om.locOn,L2&&L2.la.toFixed(4),L2&&L2.lo.toFixed(4),L2&&(om.loc.name||'')].join('|');
+  if(sig!==wSig){
+    wSig=sig;mapsW.forEach(m=>m.remove());mapsW=[];
+    let h='<div class="card"><div class="row"><div class="sp"><b>Share my location</b><small style="display:block">'+(on?'On. '+esc(nm)+' can see where you are while the app is open.':'Off. Nobody can see where you are.')+'</small></div><button class="pill'+(on?' on':'')+'" data-wh="toggle">'+(on?'Sharing ✓':'Turn on')+'</button></div></div>';
+    if(L2){
+      h+='<div class="card"><b style="display:block">'+esc(nm)+'</b>'+(om.loc.name?'<small style="display:block">📍 '+esc(om.loc.name)+'</small>':'')+'<small style="display:block" data-ago="'+L2.t+'"></small><div class="map big" data-la="'+L2.la+'" data-lo="'+L2.lo+'"></div><div style="margin-top:10px"><a class="btn ghost" style="text-decoration:none;display:inline-block" href="https://www.google.com/maps?q='+L2.la.toFixed(5)+','+L2.lo.toFixed(5)+'" target="_blank" rel="noopener noreferrer">Open in Maps</a></div></div>';
+    }else if(om&&om.locOn)h+='<div class="card mu">Waiting for '+esc(nm)+'’s location. Their app needs to be open.</div>';
+    else if(other)h+='<div class="card mu">'+esc(nm)+' is not sharing their location right now.</div>';
+    else h+='<div class="card mu">Your partner has not signed in yet.</div>';
+    h+='<small style="display:block;margin:6px 4px">Location only updates while the app is open. It is shared only between the two of us, and each of us can turn our own sharing off at any time. Place names come from OpenStreetMap. Map © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer" style="color:var(--rose)">OpenStreetMap</a> contributors.</small>';
+    $('wh_body').innerHTML=h;
+    $('wh_body').querySelectorAll('.map').forEach(el=>drawMap(el,+el.dataset.la,+el.dataset.lo,true,mapsW));
+  }
+  $('wh_body').querySelectorAll('[data-ago]').forEach(x=>x.textContent='Updated '+agoT(+x.dataset.ago));
 }
 $('where').onclick=e=>safe(async()=>{
   const t=e.target.closest('[data-wh]');if(!t)return;
@@ -729,15 +759,16 @@ const agoT=t=>{const m=Math.max(0,Math.round((Date.now()-t)/60000));return m<1?'
 function renderHomeWhere(){
   const el=$('h_wh');if(!el||!me)return;
   const ids=Object.keys(members).sort((a,b)=>who(a).localeCompare(who(b)));
-  const sig=ids.map(i=>{const m=members[i],L=locOf(m);return i+':'+(m.locOn?1:0)+':'+(L?L.la.toFixed(4)+','+L.lo.toFixed(4):'-')+':'+who(i)}).join('|');
+  const sig=ids.map(i=>{const m=members[i],L2=locOf(m);return i+':'+(m.locOn?1:0)+':'+(L2?L2.la.toFixed(4)+','+L2.lo.toFixed(4)+','+(m.loc.name||''):'-')+':'+who(i)}).join('|');
   if(sig!==whSig){
-    whSig=sig;
+    whSig=sig;mapsH.forEach(m=>m.remove());mapsH=[];
     el.innerHTML=ids.map(i=>{
-      const m=members[i],L=locOf(m);
-      return '<div class="card" style="margin:0;padding:10px"><b style="display:block">'+esc(who(i))+(i===me.uid?' (me)':'')+'</b>'
-        +(L?'<small style="display:block" data-ago="'+L.t+'"></small><iframe title="Map" src="'+mapSrc(L.la,L.lo)+'" style="width:100%;height:140px;border:0;border-radius:12px;margin-top:6px" loading="lazy"></iframe>'
+      const m=members[i],L2=locOf(m);
+      return '<div class="card" data-go="where" style="margin:0;padding:10px;cursor:pointer"><b style="display:block">'+esc(who(i))+(i===me.uid?' (me)':'')+'</b>'
+        +(L2?(m.loc.name?'<small style="display:block">📍 '+esc(m.loc.name)+'</small>':'')+'<small style="display:block" data-ago="'+L2.t+'"></small><div class="map" data-la="'+L2.la+'" data-lo="'+L2.lo+'"></div>'
           :'<small style="display:block;margin-top:4px">'+(m.locOn?'Waiting for location…':'Not sharing')+'</small>'+(i===me.uid&&!m.locOn?'<button class="pill" style="margin-top:8px" data-go="where">Turn on</button>':''))+'</div>';
     }).join('');
+    el.querySelectorAll('.map').forEach(x=>drawMap(x,+x.dataset.la,+x.dataset.lo,false,mapsH));
   }
   el.querySelectorAll('[data-ago]').forEach(x=>x.textContent='Updated '+agoT(+x.dataset.ago));
 }
