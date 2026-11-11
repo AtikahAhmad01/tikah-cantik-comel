@@ -85,6 +85,7 @@ small,.mu{font-size:13px;color:var(--mu)}
 /* 'tikah fixed spacing: title and small info on separate lines 10Nov2026 */
 .sp>b{display:block}
 .sp>small{display:block;margin-top:3px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 /* 'tikah added Calendar styles 10Nov2026 */
 .cal{display:grid;grid-template-columns:repeat(7,1fr);text-align:center;gap:4px 0}
 .cal span{padding:8px 0;font-size:14px;border-radius:50%;position:relative;cursor:pointer}
@@ -146,6 +147,8 @@ small,.mu{font-size:13px;color:var(--mu)}
 <div><button class="btn ghost" id="setd" style="margin-top:10px">Set our special date</button></div></div>
 <div class="card row" data-go="chat" style="cursor:pointer"><div class="ic">💬</div><div class="sp"><small id="h_cn">Chat</small><b id="h_cm" style="display:block;font-weight:500">Say hi ♡</b></div><small id="h_ct"></small></div>
 <div class="row" style="margin:16px 2px 0"><h2 class="sp" style="margin:0">Photos</h2><button class="pill" data-go="memories">See all ›</button></div><div class="strip" id="h_ph"></div>
+<!-- 'tikah added Where we are on Home 11Nov2026 -->
+<div class="row" style="margin:6px 2px 8px"><h2 class="sp" style="margin:0">Where we are</h2><button class="pill" data-go="where">Details ›</button></div><div class="g2" id="h_wh" style="margin-bottom:10px"></div>
 <h2>Today</h2><div class="card" id="h_today"></div>
 <h2>Coming Up</h2><div class="card" id="h_up"></div>
 <h2>Completed This Week</h2><div class="card row" id="h_wk"></div>
@@ -196,7 +199,7 @@ small,.mu{font-size:13px;color:var(--mu)}
 <div class="li row" data-go="memories" style="cursor:pointer"><div class="ic">📸</div><div class="sp"><b>Memories</b></div></div>
 <div class="li row" data-go="where" style="cursor:pointer"><div class="ic">📍</div><div class="sp"><b>Location sharing</b></div></div>
 <div class="li row" data-go="bills" style="cursor:pointer"><div class="ic">🧾</div><div class="sp"><b>Monthly bills</b></div></div></div>
-<div class="card mu" style="text-align:center;margin-bottom:12px">Everything we planned is here ♡</div><div class="card" style="margin-bottom:12px"><div class="li row" data-go="settings" style="cursor:pointer"><div class="ic">⚙️</div><div class="sp"><b>Settings</b></div></div></div><button class="btn ghost" id="bout2">Sign out</button></section>
+<!-- 'tikah removed More tagline 11Nov2026 --><div class="card" style="margin-bottom:12px"><div class="li row" data-go="settings" style="cursor:pointer"><div class="ic">⚙️</div><div class="sp"><b>Settings</b></div></div></div><button class="btn ghost" id="bout2">Sign out</button></section>
 <div id="dbg"><div class="sheet"><h2 style="margin-top:0">Our special date ♡</h2><small>The day our story started. We’ll count the days together.</small>
 <input id="d_in" type="date"><div class="row" style="margin-top:10px"><button class="btn ghost sp" id="d_cancel">Cancel</button><button class="btn sp" id="d_save">Save</button></div></div></div>
 <nav class="nav" id="nav"></nav>
@@ -265,7 +268,7 @@ onAuthStateChanged(auth,async u=>{
     $('lerr').textContent='Sorry, this Google account is not allowed in our private space.';
     await signOut(auth);return;
   }
-  unsubs.push(onSnapshot(membersCol,s=>{members={};s.forEach(d=>members[d.id]=d.data());askNick();fillWho();buildFp();render();renderChat();renderSettings();renderWhere()}));
+  unsubs.push(onSnapshot(membersCol,s=>{members={};s.forEach(d=>members[d.id]=d.data());askNick();fillWho();buildFp();render();renderChat();renderSettings();renderWhere();renderHomeWhere()}));
   unsubs.push(onSnapshot(tasksCol,s=>{tasks=s.docs.map(d=>({id:d.id,...d.data()}));render()},()=>toast('Could not load tasks')));
   unsubs.push(onSnapshot(doc(db,'couple','shared','settings','main'),s=>{stg=s.data()||{};startDate=stg.startDate||'';renderHome();renderWed();renderSettings()},()=>{}));
   /* 'tikah added Wedding Savings + Restock data 10Nov2026 */
@@ -717,6 +720,27 @@ $('where').onclick=e=>safe(async()=>{
     stopShare();await setDoc(doc(membersCol,me.uid),{locOn:false,loc:null},{merge:true});
   }
 });
+
+/* 'tikah added Home location cards 11Nov2026 */
+let whSig='';
+function locOf(m){const l=m&&m.locOn&&m.loc,la=l&&Number(l.lat),lo=l&&Number(l.lng);return l&&isFinite(la)&&isFinite(lo)&&Math.abs(la)<=90&&Math.abs(lo)<=180?{la,lo,t:l.t}:null}
+function mapSrc(la,lo){const bb=[lo-.004,la-.003,lo+.004,la+.003].map(v=>v.toFixed(5)).join('%2C');return 'https://www.openstreetmap.org/export/embed.html?bbox='+bb+'&layer=mapnik&marker='+la.toFixed(5)+'%2C'+lo.toFixed(5)}
+const agoT=t=>{const m=Math.max(0,Math.round((Date.now()-t)/60000));return m<1?'just now':m<60?m+' min ago':Math.round(m/60)+' h ago'};
+function renderHomeWhere(){
+  const el=$('h_wh');if(!el||!me)return;
+  const ids=Object.keys(members).sort((a,b)=>who(a).localeCompare(who(b)));
+  const sig=ids.map(i=>{const m=members[i],L=locOf(m);return i+':'+(m.locOn?1:0)+':'+(L?L.la.toFixed(4)+','+L.lo.toFixed(4):'-')+':'+who(i)}).join('|');
+  if(sig!==whSig){
+    whSig=sig;
+    el.innerHTML=ids.map(i=>{
+      const m=members[i],L=locOf(m);
+      return '<div class="card" style="margin:0;padding:10px"><b style="display:block">'+esc(who(i))+(i===me.uid?' (me)':'')+'</b>'
+        +(L?'<small style="display:block" data-ago="'+L.t+'"></small><iframe title="Map" src="'+mapSrc(L.la,L.lo)+'" style="width:100%;height:140px;border:0;border-radius:12px;margin-top:6px" loading="lazy"></iframe>'
+          :'<small style="display:block;margin-top:4px">'+(m.locOn?'Waiting for location…':'Not sharing')+'</small>'+(i===me.uid&&!m.locOn?'<button class="pill" style="margin-top:8px" data-go="where">Turn on</button>':''))+'</div>';
+    }).join('');
+  }
+  el.querySelectorAll('[data-ago]').forEach(x=>x.textContent='Updated '+agoT(+x.dataset.ago));
+}
 
 /* 'tikah added Chat logic 10Nov2026 */
 let mg=[],mq='',mpin=false,msel='',chatOpen=false,seenT=null;const marking=new Set();
