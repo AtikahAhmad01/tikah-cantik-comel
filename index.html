@@ -169,6 +169,8 @@ small,.mu{font-size:13px;color:var(--mu)}
 <!-- 'tikah added Memories screen + photo viewer 10Nov2026 -->
 <section class="scr" id="memories"><button class="btn ghost" data-go="more">‹ Back</button><h1 style="margin:10px 0">Memories</h1><div id="me_body"></div><button class="btn fab" id="me_add">+ Memory</button></section>
 <div id="vbg"><img id="v_img" alt=""><div id="v_cap" style="font:600 20px Fraunces,Georgia,serif"></div><small id="v_sub" style="color:#ddd"></small><div class="row" style="margin-top:8px"><button class="btn ghost" id="v_edit">✏️ Edit</button><button class="btn ghost" id="v_del">🗑 Delete</button><button class="btn" id="v_close">Close</button></div></div>
+<!-- 'tikah added Location sharing screen 10Nov2026 -->
+<section class="scr" id="where"><button class="btn ghost" data-go="more">‹ Back</button><h1 style="margin:10px 0">Where are we</h1><div id="wh_body"></div></section>
 <!-- 'tikah added Chat screen 10Nov2026 -->
 <section class="scr" id="chat">
 <div class="ch-h"><button class="x" data-go="home" aria-label="Back">‹</button><div class="sp"><b id="ch_n">Chat</b><br><small id="ch_s"></small></div><button class="x" id="ch_f" aria-label="Search" style="font-size:18px">🔍</button></div>
@@ -189,6 +191,7 @@ small,.mu{font-size:13px;color:var(--mu)}
 <div class="li row" data-go="recipes" style="cursor:pointer"><div class="ic">🍳</div><div class="sp"><b>Recipes</b></div></div>
 <div class="li row" data-go="period" style="cursor:pointer"><div class="ic">🌸</div><div class="sp"><b>Period tracker</b></div></div>
 <div class="li row" data-go="memories" style="cursor:pointer"><div class="ic">📸</div><div class="sp"><b>Memories</b></div></div>
+<div class="li row" data-go="where" style="cursor:pointer"><div class="ic">📍</div><div class="sp"><b>Location sharing</b></div></div>
 <div class="li row" data-go="bills" style="cursor:pointer"><div class="ic">🧾</div><div class="sp"><b>Monthly bills</b></div></div></div>
 <div class="card mu" style="text-align:center;margin-bottom:12px">Everything we planned is here ♡</div><div class="card" style="margin-bottom:12px"><div class="li row" data-go="settings" style="cursor:pointer"><div class="ic">⚙️</div><div class="sp"><b>Settings</b></div></div></div><button class="btn ghost" id="bout2">Sign out</button></section>
 <div id="dbg"><div class="sheet"><h2 style="margin-top:0">Our special date ♡</h2><small>The day our story started. We’ll count the days together.</small>
@@ -220,7 +223,7 @@ function esc(s){const d=document.createElement('div');d.textContent=s==null?'':S
 const TABS=['home','tasks','exp','cal','more']; /* 'tikah nav tabs 10Nov2026 */
 function show(id){
   document.querySelectorAll('.scr').forEach(s=>s.classList.toggle('on',s.id===id));
-  const sub=['wed','rest','bills','notes','wish','goals','recipes','settings','period','memories'].includes(id);
+  const sub=['wed','rest','bills','notes','wish','goals','recipes','settings','period','memories','where'].includes(id);
   $('nav').style.display=TABS.includes(id)||sub?'flex':'none';
   document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===(sub?'more':id)));
   const e=$(id);if(e)e.scrollTop=0;
@@ -251,7 +254,7 @@ $('bout').onclick=()=>signOut(auth);
 
 onAuthStateChanged(auth,async u=>{
   unsubs.forEach(f=>f());unsubs=[];
-  if(!u){me=null;show('login');return}
+  if(!u){stopShare();me=null;show('login');return}
   me=u;
   try{
     await setDoc(doc(membersCol,u.uid),{name:u.displayName||'Partner',photo:u.photoURL||''},{merge:true});
@@ -259,7 +262,7 @@ onAuthStateChanged(auth,async u=>{
     $('lerr').textContent='Sorry, this Google account is not allowed in our private space.';
     await signOut(auth);return;
   }
-  unsubs.push(onSnapshot(membersCol,s=>{members={};s.forEach(d=>members[d.id]=d.data());askNick();fillWho();buildFp();render();renderChat();renderSettings()}));
+  unsubs.push(onSnapshot(membersCol,s=>{members={};s.forEach(d=>members[d.id]=d.data());askNick();fillWho();buildFp();render();renderChat();renderSettings();renderWhere()}));
   unsubs.push(onSnapshot(tasksCol,s=>{tasks=s.docs.map(d=>({id:d.id,...d.data()}));render()},()=>toast('Could not load tasks')));
   unsubs.push(onSnapshot(doc(db,'couple','shared','settings','main'),s=>{stg=s.data()||{};startDate=stg.startDate||'';renderHome();renderWed();renderSettings()},()=>{}));
   /* 'tikah added Wedding Savings + Restock data 10Nov2026 */
@@ -667,6 +670,50 @@ $('h_ph').onclick=e=>{const o=e.target.closest('[data-mo]'),a=e.target.closest('
 $('v_close').onclick=()=>$('vbg').classList.remove('on');
 $('v_edit').onclick=()=>{const m=mems.find(z=>z.id===vid);if(m){$('vbg').classList.remove('on');memForm(m)}};
 $('v_del').onclick=()=>safe(async()=>{if(confirm('Delete this memory for both of you? This cannot be undone.')){await deleteDoc(doc(col('memories'),vid));$('vbg').classList.remove('on')}});
+
+/* 'tikah added Location sharing 10Nov2026 */
+let watchId=null,lastW=0,lastPos=null;
+const dist=(a,b)=>{const R=6371000,r=x=>x*Math.PI/180,dl=r(b.latitude-a.latitude),dg=r(b.longitude-a.longitude),h=Math.sin(dl/2)**2+Math.cos(r(a.latitude))*Math.cos(r(b.latitude))*Math.sin(dg/2)**2;return 2*R*Math.asin(Math.sqrt(h))};
+function startShare(){
+  if(!navigator.geolocation){toast('This phone or browser cannot share location');return}
+  stopShare();
+  watchId=navigator.geolocation.watchPosition(p=>{
+    const n=Date.now(),c=p.coords;
+    if(lastPos&&n-lastW<60000&&dist(lastPos,c)<50)return;
+    lastW=n;lastPos={latitude:c.latitude,longitude:c.longitude};
+    setDoc(doc(membersCol,me.uid),{loc:{lat:c.latitude,lng:c.longitude,acc:Math.round(c.accuracy||0),t:n}},{merge:true}).catch(()=>{});
+  },err=>toast(err.code===1?'Location is blocked. Please allow it in your phone settings.':'Could not get your location right now'),{enableHighAccuracy:false,maximumAge:30000,timeout:20000});
+}
+function stopShare(){if(watchId!=null&&navigator.geolocation)navigator.geolocation.clearWatch(watchId);watchId=null;lastPos=null}
+function renderWhere(){
+  if(!me||!$('wh_body'))return;
+  const other=Object.keys(members).find(i=>i!==me.uid),om=other?members[other]:null,mine=members[me.uid]||{};
+  if(mine.locOn&&watchId==null)startShare();
+  if(!mine.locOn&&watchId!=null)stopShare();
+  const on=!!mine.locOn,nm=other?who(other):'Your partner';
+  let h='<div class="card"><div class="row"><div class="sp"><b>Share my location</b><small style="display:block">'+(on?'On. '+esc(nm)+' can see where you are while the app is open.':'Off. Nobody can see where you are.')+'</small></div><button class="pill'+(on?' on':'')+'" data-wh="toggle">'+(on?'Sharing ✓':'Turn on')+'</button></div></div>';
+  const l=om&&om.locOn&&om.loc,la=l&&Number(l.lat),lo=l&&Number(l.lng);
+  if(l&&isFinite(la)&&isFinite(lo)&&Math.abs(la)<=90&&Math.abs(lo)<=180){
+    const mins=Math.max(0,Math.round((Date.now()-l.t)/60000)),ago=mins<1?'just now':mins<60?mins+' min ago':Math.round(mins/60)+' h ago';
+    const bb=[lo-.004,la-.003,lo+.004,la+.003].map(v=>v.toFixed(5)).join('%2C');
+    h+='<div class="card"><b>'+esc(who(other))+'</b><small style="display:block">Updated '+ago+(mins>30?' · this may be out of date, the app has to be open to update':'')+'</small><iframe title="Map" src="https://www.openstreetmap.org/export/embed.html?bbox='+bb+'&layer=mapnik&marker='+la.toFixed(5)+'%2C'+lo.toFixed(5)+'" style="width:100%;height:280px;border:0;border-radius:16px;margin-top:10px" loading="lazy"></iframe><div style="margin-top:10px"><a class="btn ghost" style="text-decoration:none;display:inline-block" href="https://www.google.com/maps?q='+la.toFixed(5)+','+lo.toFixed(5)+'" target="_blank" rel="noopener noreferrer">Open in Maps</a></div></div>';
+  }else if(om&&om.locOn)h+='<div class="card mu">Waiting for '+esc(nm)+'’s location. Their app needs to be open.</div>';
+  else if(other)h+='<div class="card mu">'+esc(nm)+' is not sharing their location right now.</div>';
+  else h+='<div class="card mu">Your partner has not signed in yet.</div>';
+  h+='<small style="display:block;margin:6px 4px">Location only updates while the app is open. It is shared only between the two of us, and each of us can turn our own sharing off at any time.</small>';
+  $('wh_body').innerHTML=h;
+}
+$('where').onclick=e=>safe(async()=>{
+  const t=e.target.closest('[data-wh]');if(!t)return;
+  const on=!!(members[me.uid]||{}).locOn;
+  if(!on){
+    const other=Object.keys(members).find(i=>i!==me.uid);
+    if(!confirm('Share your location with '+(other?who(other):'your partner')+'? Your phone location will be saved in our private database and shown to them while the app is open. You can turn this off at any time.'))return;
+    await setDoc(doc(membersCol,me.uid),{locOn:true},{merge:true});startShare();
+  }else{
+    stopShare();await setDoc(doc(membersCol,me.uid),{locOn:false,loc:null},{merge:true});
+  }
+});
 
 /* 'tikah added Chat logic 10Nov2026 */
 let mg=[],mq='',mpin=false,msel='',chatOpen=false,seenT=null;const marking=new Set();
