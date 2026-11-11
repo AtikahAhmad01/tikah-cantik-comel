@@ -67,6 +67,16 @@ small,.mu{font-size:13px;color:var(--mu)}
 .cin{display:flex;gap:8px;padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px));background:var(--card)}
 .cin input,#ch_q{flex:1;border:0;border-radius:99px;background:var(--bg);padding:12px 16px;font:16px 'DM Sans';color:var(--tx);outline:0;width:100%}
 .send{width:46px;height:46px;border-radius:50%;border:0;background:var(--rose);color:#fff;font-size:18px;cursor:pointer;flex:none}
+.cal .pd{background:var(--ac);color:#fff}
+.cal .pp{box-shadow:inset 0 0 0 2px var(--ac)}
+/* 'tikah added Memories styles 10Nov2026 */
+.gal{display:grid;grid-template-columns:1fr 1fr;gap:16px 14px;padding:4px}
+.pol{background:#fff;color:#382A35;padding:8px 8px 10px;border-radius:8px;box-shadow:0 6px 18px rgba(184,92,131,.18);cursor:pointer}
+.pol:nth-child(odd){transform:rotate(-1.5deg)}.pol:nth-child(even){transform:rotate(1.5deg)}
+.pol img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:4px;display:block}
+.pol b{font:600 14px 'Fraunces',Georgia,serif;display:block;margin-top:6px;word-wrap:break-word}.pol small{color:#9B8493}
+#vbg{position:absolute;inset:0;background:rgba(30,15,25,.93);display:none;z-index:25;flex-direction:column;align-items:center;justify-content:center;padding:20px;gap:10px;color:#fff;text-align:center}
+#vbg.on{display:flex}#vbg img{max-width:100%;max-height:62%;border-radius:10px}
 /* 'tikah added Calendar styles 10Nov2026 */
 .cal{display:grid;grid-template-columns:repeat(7,1fr);text-align:center;gap:4px 0}
 .cal span{padding:8px 0;font-size:14px;border-radius:50%;position:relative;cursor:pointer}
@@ -148,6 +158,11 @@ small,.mu{font-size:13px;color:var(--mu)}
 <section class="scr" id="goals"><button class="btn ghost" data-go="more">‹ Back</button><h1 style="margin:10px 0">Savings Goals</h1><div id="go_body"></div><button class="btn fab" id="go_add">+ Goal</button></section>
 <section class="scr" id="recipes"><button class="btn ghost" data-go="more">‹ Back</button><h1 style="margin:10px 0">Recipes</h1><div id="rc_body"></div><button class="btn fab" id="rc_add">+ Recipe</button></section>
 <section class="scr" id="settings"><button class="btn ghost" data-go="more">‹ Back</button><h1 style="margin:10px 0">Settings</h1><div id="s_body"></div></section>
+<!-- 'tikah added Period tracker screen 10Nov2026 -->
+<section class="scr" id="period"><button class="btn ghost" data-go="more">‹ Back</button><h1 style="margin:10px 0">Period Tracker</h1><div id="pe_body"></div><button class="btn fab" id="pe_add">+ Log period</button></section>
+<!-- 'tikah added Memories screen + photo viewer 10Nov2026 -->
+<section class="scr" id="memories"><button class="btn ghost" data-go="more">‹ Back</button><h1 style="margin:10px 0">Memories</h1><div id="me_body"></div><button class="btn fab" id="me_add">+ Memory</button></section>
+<div id="vbg"><img id="v_img" alt=""><div id="v_cap" style="font:600 20px Fraunces,Georgia,serif"></div><small id="v_sub" style="color:#ddd"></small><div class="row" style="margin-top:8px"><button class="btn ghost" id="v_edit">✏️ Edit</button><button class="btn ghost" id="v_del">🗑 Delete</button><button class="btn" id="v_close">Close</button></div></div>
 <!-- 'tikah added Chat screen 10Nov2026 -->
 <section class="scr" id="chat">
 <div class="ch-h"><button class="x" data-go="home" aria-label="Back">‹</button><div class="sp"><b id="ch_n">Chat</b><br><small id="ch_s"></small></div><button class="x" id="ch_f" aria-label="Search" style="font-size:18px">🔍</button></div>
@@ -166,8 +181,10 @@ small,.mu{font-size:13px;color:var(--mu)}
 <div class="li row" data-go="wish" style="cursor:pointer"><div class="ic">🌟</div><div class="sp"><b>Wishlist</b></div></div>
 <div class="li row" data-go="goals" style="cursor:pointer"><div class="ic">🐷</div><div class="sp"><b>Savings goals</b></div></div>
 <div class="li row" data-go="recipes" style="cursor:pointer"><div class="ic">🍳</div><div class="sp"><b>Recipes</b></div></div>
+<div class="li row" data-go="period" style="cursor:pointer"><div class="ic">🌸</div><div class="sp"><b>Period tracker</b></div></div>
+<div class="li row" data-go="memories" style="cursor:pointer"><div class="ic">📸</div><div class="sp"><b>Memories</b></div></div>
 <div class="li row" data-go="bills" style="cursor:pointer"><div class="ic">🧾</div><div class="sp"><b>Monthly bills</b></div></div></div>
-<div class="card mu" style="text-align:center;margin-bottom:12px">Memories (photos) are coming soon ♡</div><div class="card" style="margin-bottom:12px"><div class="li row" data-go="settings" style="cursor:pointer"><div class="ic">⚙️</div><div class="sp"><b>Settings</b></div></div></div><button class="btn ghost" id="bout2">Sign out</button></section>
+<div class="card mu" style="text-align:center;margin-bottom:12px">Everything we planned is here ♡</div><div class="card" style="margin-bottom:12px"><div class="li row" data-go="settings" style="cursor:pointer"><div class="ic">⚙️</div><div class="sp"><b>Settings</b></div></div></div><button class="btn ghost" id="bout2">Sign out</button></section>
 <div id="dbg"><div class="sheet"><h2 style="margin-top:0">Our special date ♡</h2><small>The day our story started. We’ll count the days together.</small>
 <input id="d_in" type="date"><div class="row" style="margin-top:10px"><button class="btn ghost sp" id="d_cancel">Cancel</button><button class="btn sp" id="d_save">Save</button></div></div></div>
 <nav class="nav" id="nav"></nav>
@@ -197,7 +214,7 @@ function esc(s){const d=document.createElement('div');d.textContent=s==null?'':S
 const TABS=['home','tasks','exp','cal','more']; /* 'tikah nav tabs 10Nov2026 */
 function show(id){
   document.querySelectorAll('.scr').forEach(s=>s.classList.toggle('on',s.id===id));
-  const sub=['wed','rest','bills','notes','wish','goals','recipes','settings'].includes(id);
+  const sub=['wed','rest','bills','notes','wish','goals','recipes','settings','period','memories'].includes(id);
   $('nav').style.display=TABS.includes(id)||sub?'flex':'none';
   document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===(sub?'more':id)));
   const e=$(id);if(e)e.scrollTop=0;
@@ -245,6 +262,8 @@ onAuthStateChanged(auth,async u=>{
   unsubs.push(onSnapshot(col('wcheck'),s=>{wchk={};wcust=[];s.forEach(d=>{wchk[d.id]=d.data();if(d.data().custom)wcust.push({id:d.id,...d.data()})});renderWed()},()=>{}));
   unsubs.push(onSnapshot(col('restock'),s=>{stock=s.docs.map(d=>({id:d.id,...d.data()}));renderStock()},()=>{}));
   unsubs.push(onSnapshot(query(col('messages'),orderBy('ts','desc'),limit(300)),s=>{mg=s.docs.map(d=>({id:d.id,...d.data()}));renderChat()},()=>{})); /* 'tikah added chat data 10Nov2026 */
+  unsubs.push(onSnapshot(col('period'),s=>{per=s.docs.map(d=>({id:d.id,...d.data()}));renderPeriod()},()=>{})); /* 'tikah added period data 10Nov2026 */
+  unsubs.push(onSnapshot(query(col('memories'),orderBy('date','desc'),limit(60)),s=>{mems=s.docs.map(d=>({id:d.id,...d.data()}));renderMems()},()=>{})); /* 'tikah added memories data 10Nov2026 */
   unsubs.push(onSnapshot(col('notes'),s=>{notes=s.docs.map(d=>({id:d.id,...d.data()}));renderNotes()},()=>{})); /* 'tikah added notes/wishes/goals/recipes data 10Nov2026 */
   unsubs.push(onSnapshot(col('wishes'),s=>{wishes=s.docs.map(d=>({id:d.id,...d.data()}));renderWish()},()=>{}));
   unsubs.push(onSnapshot(col('goals'),s=>{goals=s.docs.map(d=>({id:d.id,...d.data()}));renderGoals()},()=>{}));
@@ -257,7 +276,7 @@ onAuthStateChanged(auth,async u=>{
 });
 
 /* 'tikah added Wedding Savings + Restock + generic form sheet 10Nov2026 */
-let stg={},wsave=[],wbud={},wchk={},wcust=[],stock=[],askCb=null,rc='all';
+let stg={},wsave=[],wbud={},wchk={},wcust=[],stock=[],askCb=null,gfile='',rc='all';
 const col=n=>collection(db,'couple','shared',n);
 const RM=n=>'RM '+(+n||0).toLocaleString('en-MY',{maximumFractionDigits:2});
 const slug=s=>s.toLowerCase().replace(/[^a-z0-9]+/g,'-');
@@ -270,8 +289,8 @@ function ask(title,fields,cb){
   $('g_t').textContent=title;
   $('g_f').innerHTML=fields.map(f=>'<small>'+esc(f.p)+'</small>'+(f.opts
     ?'<select data-k="'+f.k+'">'+f.opts.map(o=>'<option value="'+esc(o[0])+'"'+(o[0]===f.v?' selected':'')+'>'+esc(o[1])+'</option>').join('')+'</select>'
-    :f.t==='area'?'<textarea data-k="'+f.k+'" rows="4">'+esc(f.v==null?'':f.v)+'</textarea>':'<input data-k="'+f.k+'" type="'+(f.t||'text')+'" value="'+esc(f.v==null?'':f.v)+'"'+(f.t==='number'?' inputmode="decimal" step="0.01" min="0"':'')+'>')).join('');
-  askCb=cb;$('gbg').classList.add('on');
+    :f.t==='file'?'<input type="file" accept="image/*" data-file="1"><small id="g_fs"></small>':f.t==='area'?'<textarea data-k="'+f.k+'" rows="4">'+esc(f.v==null?'':f.v)+'</textarea>':'<input data-k="'+f.k+'" type="'+(f.t||'text')+'" value="'+esc(f.v==null?'':f.v)+'"'+(f.t==='number'?' inputmode="decimal" step="0.01" min="0"':'')+'>')).join('');
+  askCb=cb;gfile='';$('gbg').classList.add('on');
 }
 $('g_cancel').onclick=()=>$('gbg').classList.remove('on');
 $('gbg').onclick=e=>{if(e.target.id==='gbg')$('gbg').classList.remove('on')};
@@ -510,7 +529,7 @@ function renderSettings(){
 async function backup(){
   if(!confirm('This file will contain ALL your private shared data (chat, savings, expenses and more). Keep it safe and do not share it. Continue?'))return;
   const out={exportedAt:new Date().toISOString()};
-  for(const n of ['tasks','members','wsave','wbudget','wcheck','restock','expenses','events','bills','messages','notes','wishes','goals','gsave','recipes']){out[n]=(await getDocs(col(n))).docs.map(d=>({id:d.id,...d.data()}))}
+  for(const n of ['tasks','members','wsave','wbudget','wcheck','restock','expenses','events','bills','messages','notes','wishes','goals','gsave','recipes','period','memories']){out[n]=(await getDocs(col(n))).docs.map(d=>({id:d.id,...d.data()}))}
   out.settings=(await getDoc(doc(db,'couple','shared','settings','main'))).data()||{};
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(out,null,1)],{type:'application/json'}));a.download='our-future-backup-'+ymd(new Date())+'.json';a.click();
 }
@@ -522,6 +541,118 @@ $('settings').onclick=e=>safe(async()=>{
   if(a.dataset.sa==='start')$('setd').click();
   if(a.dataset.sa==='backup')await backup();
 });
+
+/* 'tikah added Period tracker 10Nov2026 */
+let per=[],pm=ymd(new Date()).slice(0,7);
+const dd=(a,b)=>Math.round((new Date(b+'T00:00')-new Date(a+'T00:00'))/864e5);
+const ad=(x,n)=>{const d=new Date(x+'T00:00');d.setDate(d.getDate()+n);return ymd(d)};
+function perStats(){
+  const l=[...per].sort((a,b)=>a.start.localeCompare(b.start)),gaps=[];
+  for(let i=1;i<l.length;i++){const g=dd(l[i-1].start,l[i].start);if(g>=18&&g<=60)gaps.push(g)}
+  const g6=gaps.slice(-6),cyc=g6.length?Math.round(g6.reduce((a,b)=>a+b,0)/g6.length):28;
+  const lens=l.filter(x=>x.end&&x.end>=x.start).map(x=>dd(x.start,x.end)+1).slice(-6),len=lens.length?Math.round(lens.reduce((a,b)=>a+b,0)/lens.length):5;
+  return {l,cyc,len,last:l[l.length-1],real:g6.length>0};
+}
+function renderPeriod(){
+  if(!me||!$('pe_body'))return;
+  const today=ymd(new Date()),S=perStats(),last=S.last;
+  const ongoing=last&&!last.end&&dd(last.start,today)>=0&&dd(last.start,today)<10;
+  const next=last?ad(last.start,S.cyc):null;
+  let st;
+  if(!last)st='<b>No periods logged yet</b><small style="display:block">Tap “+ Log period” to start ♡</small>';
+  else if(ongoing)st='<b style="font:600 22px Fraunces,serif">Period day '+(dd(last.start,today)+1)+'</b><small style="display:block">Next one expected about '+nice(next)+'</small>';
+  else{const k=dd(today,next);st='<b style="font:600 22px Fraunces,serif">Cycle day '+(dd(last.start,today)+1)+'</b><small style="display:block">'+(k>0?'Next period expected in '+k+' day'+(k===1?'':'s'):k===0?'Next period expected today':'Expected '+(-k)+' day'+(k===-1?'':'s')+' ago')+' · about '+nice(next)+'</small>'}
+  let h='<div class="card">'+st+'<div class="row" style="margin-top:12px"><button class="btn sp" data-pa="start">🌸 Period started</button>'+(ongoing?'<button class="btn ghost sp" data-pa="end">Period ended</button>':'')+'</div></div>';
+  h+='<div class="card row"><div class="sp"><small>Average cycle</small><b style="font:600 20px Fraunces,serif;display:block">'+S.cyc+' days</b></div><div class="sp"><small>Average period</small><b style="font:600 20px Fraunces,serif;display:block">'+S.len+' days</b></div></div>';
+  if(!S.real)h+='<small style="display:block;margin:0 4px 10px">Estimates use a 28-day cycle until you have logged a few periods.</small>';
+  const logged=new Set(),pred=new Set();
+  per.forEach(x=>{const e=x.end&&x.end>=x.start?x.end:(dd(x.start,today)>=0&&dd(x.start,today)<10?today:x.start);for(let d=x.start,n=0;d<=e&&n<20;d=ad(d,1),n++)logged.add(d)});
+  if(next)for(let i=0;i<S.len;i++)pred.add(ad(next,i));
+  const [Y,M]=pm.split('-').map(Number),first=new Date(Y,M-1,1).getDay(),n=new Date(Y,M,0).getDate();
+  let g=['S','M','T','W','T','F','S'].map(d=>'<span class="h">'+d+'</span>').join('')+'<span></span>'.repeat(first);
+  for(let i=1;i<=n;i++){const ds=pm+'-'+String(i).padStart(2,'0');g+='<span class="'+(ds===today?'t ':'')+(logged.has(ds)?'pd':pred.has(ds)?'pp':'')+'">'+i+'</span>'}
+  h+='<div class="row" style="margin:6px 0 12px"><button class="pill" data-pmn="-1">‹</button><b class="sp" style="text-align:center">'+new Date(Y,M-1,1).toLocaleDateString('en-GB',{month:'long',year:'numeric'})+'</b><button class="pill" data-pmn="1">›</button></div><div class="card"><div class="cal">'+g+'</div><small style="display:block;margin-top:8px">Filled = logged · outlined = expected</small></div>';
+  h+='<h2>History</h2><div class="card">'+(S.l.length?[...S.l].reverse().map(x=>'<div class="li row"><div class="sp" data-pe="'+esc(x.id)+'" style="cursor:pointer"><b>'+nice(x.start)+(x.end?' – '+nice(x.end)+' ('+(dd(x.start,x.end)+1)+' days)':' · ongoing')+'</b>'+(x.note?'<small style="display:block">'+esc(x.note)+'</small>':'')+'</div><button class="x" data-px="'+esc(x.id)+'">🗑</button></div>').join(''):'<span class="mu">Nothing logged yet ♡</span>')+'</div>';
+  h+='<small style="display:block;margin:8px 4px">These are estimates from what you log. They are not medical advice. If something feels off, please talk to a doctor.</small>';
+  $('pe_body').innerHTML=h;
+}
+function perForm(x){
+  x=x||{};
+  ask(x.id?'Edit period':'Log period',[{k:'start',p:'First day',t:'date',v:x.start||ymd(new Date())},{k:'end',p:'Last day (leave empty if still ongoing)',t:'date',v:x.end},{k:'note',p:'How did it feel? Mood, symptoms (optional)',t:'area',v:x.note}],v=>{
+    if(!v.start){toast('Please pick the first day');return false}
+    if(v.end&&v.end<v.start){toast('The last day must be after the first day');return false}
+    const d={start:v.start,end:v.end,note:v.note.slice(0,500)};
+    return x.id?updateDoc(doc(col('period'),x.id),d):addDoc(col('period'),{...d,createdBy:me.uid,createdAt:serverTimestamp()});
+  });
+}
+$('pe_add').onclick=()=>perForm();
+$('period').onclick=e=>safe(async()=>{
+  const a=e.target.closest('[data-pa]'),m=e.target.closest('[data-pmn]'),ed=e.target.closest('[data-pe]'),x=e.target.closest('[data-px]');
+  if(a&&a.dataset.pa==='start')perForm();
+  if(a&&a.dataset.pa==='end'){const last=perStats().last;if(last)ask('Period ended',[{k:'end',p:'Last day of period',t:'date',v:ymd(new Date())}],v=>{if(!v.end||v.end<last.start){toast('Please pick a date after the first day');return false}return updateDoc(doc(col('period'),last.id),{end:v.end})})}
+  if(m){const t=new Date(pm+'-01T00:00');t.setMonth(t.getMonth()+(+m.dataset.pmn));pm=ymd(t).slice(0,7);renderPeriod()}
+  if(ed){const y=per.find(z=>z.id===ed.dataset.pe);if(y)perForm(y)}
+  if(x&&confirm('Delete this entry for both of you? This cannot be undone.'))await deleteDoc(doc(col('period'),x.dataset.px));
+});
+
+/* 'tikah added Memories logic 10Nov2026 */
+let mems=[],mal='all',vid='';
+function shrink(file){
+  return new Promise((res,rej)=>{
+    const r=new FileReader();r.onerror=rej;
+    r.onload=()=>{const im=new Image();im.onerror=rej;im.onload=()=>{
+      let w=im.width,h=im.height;const m=900;
+      if(Math.max(w,h)>m){const k=m/Math.max(w,h);w=Math.round(w*k);h=Math.round(h*k)}
+      const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(im,0,0,w,h);
+      let q=.75,u=c.toDataURL('image/jpeg',q);
+      while(u.length>700000&&q>.3){q-=.1;u=c.toDataURL('image/jpeg',q)}
+      res(u)};im.src=r.result};
+    r.readAsDataURL(file);
+  });
+}
+$('g_f').addEventListener('change',async e=>{
+  if(!e.target.dataset.file)return;
+  const f=e.target.files[0],st=$('g_fs');gfile='';
+  if(!f)return;
+  st.textContent='Getting your photo ready…';
+  try{gfile=await shrink(f);st.textContent='Photo ready ♡ ('+Math.round(gfile.length/1024)+' KB)'}
+  catch(err){st.textContent='Sorry, I could not read that photo. Please try another one.'}
+});
+function renderMems(){
+  if(!me||!$('me_body'))return;
+  const albums=[...new Set(mems.map(m=>m.album).filter(Boolean))].sort();
+  let h='<div class="pills"><button class="pill'+(mal==='all'?' on':'')+'" data-mf="all">All</button>'+albums.map(a=>'<button class="pill'+(mal===a?' on':'')+'" data-mf="'+esc(a)+'">'+esc(a)+'</button>').join('')+'</div>';
+  const l=mems.filter(m=>mal==='all'||m.album===mal);
+  if(!l.length)h+=empty('No memories yet. Tap “+ Memory” to add our first photo ♡');
+  let cur='';
+  l.forEach(m=>{
+    const ym=m.date.slice(0,7);
+    if(ym!==cur){if(cur)h+='</div>';cur=ym;h+='<h2>'+new Date(ym+'-01T00:00').toLocaleDateString('en-GB',{month:'long',year:'numeric'})+'</h2><div class="gal">'}
+    h+='<div class="pol" data-mo="'+esc(m.id)+'"><img src="'+esc(m.img)+'" alt=""><b>'+esc(m.caption||'')+'</b><small>'+nice(m.date)+(m.album?' · '+esc(m.album):'')+'</small></div>';
+  });
+  if(cur)h+='</div>';
+  if(mems.length>=60)h+='<small style="display:block;margin:12px 4px">Showing the 60 newest memories.</small>';
+  $('me_body').innerHTML=h;
+}
+function memForm(x){
+  x=x||{};
+  const ev=[['','None']].concat(evs.map(e=>[e.title,icon(e.type)+' '+e.title]));
+  ask(x.id?'Edit memory':'New memory',(x.id?[]:[{k:'file',p:'Photo',t:'file'}]).concat([{k:'caption',p:'Caption',v:x.caption},{k:'date',p:'Date',t:'date',v:x.date||ymd(new Date())},{k:'album',p:'Album (optional, e.g. First trip)',v:x.album},{k:'evt',p:'Link to an event or milestone (optional)',opts:ev,v:x.evt||''}]),v=>{
+    if(!x.id&&!gfile){toast('Please choose a photo first');return false}
+    if(!v.date){toast('Please pick a date');return false}
+    const d={caption:v.caption.slice(0,100),date:v.date,album:v.album.slice(0,30),evt:v.evt};
+    return x.id?updateDoc(doc(col('memories'),x.id),d):addDoc(col('memories'),{...d,img:gfile,by:me.uid,createdAt:serverTimestamp()});
+  });
+}
+$('me_add').onclick=()=>memForm();
+$('memories').onclick=e=>{
+  const f=e.target.closest('[data-mf]'),o=e.target.closest('[data-mo]');
+  if(f){mal=f.dataset.mf;renderMems()}
+  if(o){const m=mems.find(z=>z.id===o.dataset.mo);if(m){vid=m.id;$('v_img').src=m.img;$('v_cap').textContent=m.caption||'';$('v_sub').textContent=nice(m.date)+' '+m.date.slice(0,4)+(m.album?' · '+m.album:'')+(m.evt?' · '+m.evt:'')+' · added by '+who(m.by);$('vbg').classList.add('on')}}
+};
+$('v_close').onclick=()=>$('vbg').classList.remove('on');
+$('v_edit').onclick=()=>{const m=mems.find(z=>z.id===vid);if(m){$('vbg').classList.remove('on');memForm(m)}};
+$('v_del').onclick=()=>safe(async()=>{if(confirm('Delete this memory for both of you? This cannot be undone.')){await deleteDoc(doc(col('memories'),vid));$('vbg').classList.remove('on')}});
 
 /* 'tikah added Chat logic 10Nov2026 */
 let mg=[],mq='',mpin=false,msel='',chatOpen=false,seenT=null;const marking=new Set();
